@@ -1,0 +1,100 @@
+export type Role = 'admin' | 'client';
+
+export type AccountStatus = 'pending' | 'approved' | 'blocked';
+
+export interface AppUser {
+  uid: string;
+  role: Role;
+  phone: string; // E.164 format, jedinstven po nalogu (garantovano Firebase Phone Auth-om)
+  fullName: string; // ime i prezime
+  age: number | null;
+  photoURL: string | null;
+  profileComplete: boolean; // true kad su fullName + age uneti (posle prve SMS prijave)
+  accountStatus: AccountStatus;
+  expoPushToken?: string;
+  createdAt: number;
+}
+
+// Vrste usluga koje Olgica nudi (cena je informativna — ne utiče na trajanje termina,
+// trajanje uvek zavisi samo od broja osoba).
+export interface ServiceType {
+  id: string;
+  name: string; // npr. "Šišanje", "Brijanje", "Pranje kose"
+  price: number; // u RSD, uređuje Olgica, vidljivo svima u cenovniku
+  active: boolean;
+}
+
+export type AppointmentStatus = 'zakazano' | 'potvrdjeno' | 'otkazano';
+
+// Svaki termin je blok od 30 min. Broj osoba određuje koliko uzastopnih
+// slotova se rezerviše (npr. 2 osobe = 60 min = 2 slota).
+export interface Appointment {
+  id: string;
+  clientId: string;
+  clientName: string;
+  clientPhone: string;
+  serviceIds: string[];
+  serviceNames: string[];
+  peopleCount: number;
+  date: string; // YYYY-MM-DD
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm, izračunato kao startTime + peopleCount * 30min
+  startAtMillis: number; // date+startTime kao timestamp, radi upita (npr. 24h podsetnik)
+  status: AppointmentStatus;
+  note?: string;
+  reminderSentAt?: number | null;
+  createdAt: number;
+  cancelledBy?: Role | null;
+}
+
+export interface DayHours {
+  closed: boolean;
+  start: string; // HH:mm
+  end: string; // HH:mm
+}
+
+export type Weekday = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
+
+export type WeeklyDefaultHours = Record<Weekday, DayHours>;
+
+// Ručni izuzetak za konkretan datum (drugo radno vreme ili slobodan dan).
+export interface WorkingHoursOverride {
+  date: string; // YYYY-MM-DD
+  closed: boolean;
+  start?: string;
+  end?: string;
+}
+
+// Ručno blokiran termin u toku dana (pauza).
+export interface BlockedSlot {
+  id: string;
+  date: string; // YYYY-MM-DD
+  startTime: string;
+  endTime: string;
+  reason?: string;
+}
+
+export type UrgentRequestStatus = 'open' | 'resolved';
+
+export interface UrgentRequest {
+  id: string;
+  clientId: string;
+  clientName: string;
+  clientPhone: string;
+  note: string;
+  status: UrgentRequestStatus;
+  createdAt: number;
+}
+
+export type RescheduleRequestStatus = 'pending' | 'accepted' | 'declined';
+
+export interface RescheduleRequest {
+  id: string;
+  appointmentId: string;
+  clientId: string;
+  message: string;
+  status: RescheduleRequestStatus;
+  createdAt: number;
+}
+
+export const SLOT_MINUTES = 30;
