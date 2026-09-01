@@ -38,13 +38,6 @@ export const calendarTheme = {
   arrowColor: colors.textOnPrimary,
   selectedDayBackgroundColor: colors.secondary,
   selectedDayTextColor: colors.textOnPrimary,
-  'stylesheet.calendar.header': {
-    week: {
-      marginTop: 5,
-      flexDirection: 'row' as const,
-      justifyContent: 'space-between',
-    },
-  },
 };
 
 export const theme = { colors, spacing, radius, typography, calendarTheme };

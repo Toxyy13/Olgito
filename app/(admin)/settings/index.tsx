@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ScreenContainer } from '../../../src/components/ScreenContainer';
+import { ScreenHeader } from '../../../src/components/ScreenHeader';
 import { useAuth } from '../../../src/context/AuthContext';
 import { colors, radius, spacing, typography } from '../../../src/theme';
 
@@ -11,24 +12,32 @@ export default function SettingsIndexScreen() {
   const { logout } = useAuth();
 
   return (
-    <ScreenContainer>
-      <Text style={styles.title}>Podešavanja</Text>
+    <ScreenContainer scroll>
+      <ScreenHeader title="Podešavanja" />
 
-      <MenuItem
-        icon="time"
-        label="Radno vreme"
-        subtitle="Nedeljni raspored, slobodni dani, pauze"
-        onPress={() => router.push('/(admin)/settings/working-hours')}
-      />
-      <MenuItem
-        icon="pricetag"
-        label="Usluge i cenovnik"
-        subtitle="Dodaj usluge i uredi cene"
-        onPress={() => router.push('/(admin)/settings/services')}
-      />
+      <View style={styles.content}>
+        <MenuItem
+          icon="time"
+          label="Radno vreme"
+          subtitle="Nedeljni raspored, slobodni dani, pauze"
+          onPress={() => router.push('/(admin)/settings/working-hours')}
+        />
+        <MenuItem
+          icon="pricetag"
+          label="Usluge i cenovnik"
+          subtitle="Dodaj usluge i uredi cene"
+          onPress={() => router.push('/(admin)/settings/services')}
+        />
+        <MenuItem
+          icon="cash"
+          label="Zarada"
+          subtitle="Ukupna zarada po danu, nedelji i mesecu"
+          onPress={() => router.push('/(admin)/settings/earnings')}
+        />
+      </View>
 
       <Pressable style={styles.logout} onPress={logout}>
-        <Ionicons name="log-out" size={20} color={colors.danger} />
+        <Ionicons name="log-out" size={20} color={colors.textOnPrimary} />
         <Text style={styles.logoutText}>Odjavi se</Text>
       </Pressable>
     </ScreenContainer>
@@ -49,7 +58,7 @@ function MenuItem({
   return (
     <Pressable style={styles.item} onPress={onPress}>
       <View style={styles.iconWrap}>
-        <Ionicons name={icon} size={22} color={colors.primary} />
+        <Ionicons name={icon} size={22} color={colors.textOnPrimary} />
       </View>
       <View style={{ flex: 1 }}>
         <Text style={styles.itemLabel}>{label}</Text>
@@ -61,7 +70,7 @@ function MenuItem({
 }
 
 const styles = StyleSheet.create({
-  title: { ...typography.h2, color: colors.textPrimary, marginBottom: spacing.md },
+  content: { flex: 1, justifyContent: 'center', gap: spacing.sm },
   item: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -89,5 +98,5 @@ const styles = StyleSheet.create({
     marginTop: spacing.xl,
     padding: spacing.md,
   },
-  logoutText: { color: colors.danger, ...typography.bodyBold },
+  logoutText: { color: colors.textOnPrimary, ...typography.bodyBold },
 });

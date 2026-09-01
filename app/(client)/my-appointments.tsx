@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Alert } from 'react-native';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
+import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { StatusBadge } from '../../src/components/StatusBadge';
 import { Button } from '../../src/components/Button';
 import { colors, radius, spacing, typography } from '../../src/theme';
@@ -32,11 +33,12 @@ export default function MyAppointmentsScreen() {
 
   return (
     <ScreenContainer>
-      <Text style={styles.title}>Moji termini</Text>
+      <ScreenHeader title="Moji termini" />
       <FlatList
+        style={{ flex: 1 }}
         data={appointments}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ gap: spacing.md, paddingBottom: spacing.xl }}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', gap: spacing.md, paddingBottom: spacing.xl }}
         ListEmptyComponent={<Text style={styles.empty}>Još uvek nemaš zakazanih termina.</Text>}
         renderItem={({ item }) => (
           <View style={styles.card}>
@@ -64,7 +66,7 @@ export default function MyAppointmentsScreen() {
 }
 
 const styles = StyleSheet.create({
-  title: { ...typography.h2, color: colors.textPrimary, marginBottom: spacing.md },
+  title: { ...typography.h2, color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.md },
   empty: { color: colors.textSecondary, ...typography.body, textAlign: 'center', marginTop: spacing.xl },
   card: { backgroundColor: colors.surface, borderRadius: radius.md, padding: spacing.md, gap: spacing.xs },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
+import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { colors, radius, spacing, typography, calendarTheme } from '../../src/theme';
 import { getEffectiveDayHours } from '../../src/api/workingHours';
 import { watchBusyRanges, type AvailabilityRange } from '../../src/api/availability';
@@ -51,41 +52,43 @@ export default function ClientCalendarScreen() {
     });
   }, [dayHours, busyRanges]);
 
+  // Kalendar (i "zatvoreno" poruka) žive u ListHeaderComponent-u tako da CEO
+  // ekran ima jedan vlasnik skrola (FlatList) — bitno na malim telefonima.
   return (
     <ScreenContainer>
-      <Text style={styles.title}>Kalendar</Text>
-      <Calendar
-        current={selectedDate}
-        minDate={todayISO()}
-        onDayPress={(d) => setSelectedDate(d.dateString)}
-        markedDates={{ [selectedDate]: { selected: true, selectedColor: colors.secondary } }}
-        theme={calendarTheme}
-        style={styles.calendar}
+      <FlatList
+        style={{ flex: 1 }}
+        data={dayHours?.closed ? [] : slots}
+        keyExtractor={(item) => item.start}
+        numColumns={3}
+        columnWrapperStyle={{ gap: spacing.sm }}
+        contentContainerStyle={{ gap: spacing.sm, paddingBottom: spacing.xl }}
+        ListHeaderComponent={
+          <View style={{ marginBottom: spacing.md }}>
+            <ScreenHeader title="Kalendar" />
+            <Calendar
+              current={selectedDate}
+              minDate={todayISO()}
+              onDayPress={(d) => setSelectedDate(d.dateString)}
+              markedDates={{ [selectedDate]: { selected: true, selectedColor: colors.secondary } }}
+              theme={calendarTheme}
+              style={styles.calendar}
+            />
+            {dayHours?.closed && <Text style={styles.closed}>Olgica ne radi ovog dana 🌴</Text>}
+          </View>
+        }
+        renderItem={({ item }) => (
+          <View style={[styles.slot, item.busy ? styles.slotBusy : styles.slotFree]}>
+            <Text style={item.busy ? styles.slotBusyText : styles.slotFreeText}>{item.start}</Text>
+          </View>
+        )}
       />
-
-      {dayHours?.closed ? (
-        <Text style={styles.closed}>Olgica ne radi ovog dana 🌴</Text>
-      ) : (
-        <FlatList
-          data={slots}
-          keyExtractor={(item) => item.start}
-          numColumns={3}
-          columnWrapperStyle={{ gap: spacing.sm }}
-          contentContainerStyle={{ gap: spacing.sm, paddingTop: spacing.md, paddingBottom: spacing.xl }}
-          renderItem={({ item }) => (
-            <View style={[styles.slot, item.busy ? styles.slotBusy : styles.slotFree]}>
-              <Text style={item.busy ? styles.slotBusyText : styles.slotFreeText}>{item.start}</Text>
-            </View>
-          )}
-        />
-      )}
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  title: { ...typography.h2, color: colors.textPrimary, marginBottom: spacing.sm },
-  calendar: { borderRadius: radius.md, overflow: 'hidden' },
+  calendar: { borderRadius: radius.md, overflow: 'hidden', marginTop: spacing.sm },
   closed: { ...typography.bodyBold, color: colors.textSecondary, textAlign: 'center', marginTop: spacing.xl },
   slot: { flex: 1, paddingVertical: spacing.sm, borderRadius: radius.sm, alignItems: 'center' },
   slotFree: { backgroundColor: colors.slotSlobodan, borderWidth: 1, borderColor: colors.slotSlobodanBorder },

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Text, TextInput, View, StyleSheet, Image, Pressable } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
 import { useAuth } from '../../src/context/AuthContext';
 import { completeProfile } from '../../src/api/users';
 import { uploadProfilePhoto } from '../../src/api/upload';
@@ -9,7 +10,8 @@ import { ScreenContainer } from '../../src/components/ScreenContainer';
 import { colors, spacing, typography } from '../../src/theme';
 
 export default function CompleteProfileScreen() {
-  const { appUser } = useAuth();
+  const { appUser, setAppUser } = useAuth();
+  const router = useRouter();
   const [fullName, setFullName] = useState('');
   const [age, setAge] = useState('');
   const [phone, setPhone] = useState('');
@@ -53,7 +55,14 @@ export default function CompleteProfileScreen() {
       if (photoUri) {
         photoURL = await uploadProfilePhoto(appUser.uid, photoUri);
       }
-      await completeProfile(appUser.uid, { fullName: fullName.trim(), age: ageNum, phone: phone.trim(), photoURL });
+      const updated = await completeProfile(appUser.uid, {
+        fullName: fullName.trim(),
+        age: ageNum,
+        phone: phone.trim(),
+        photoURL,
+      });
+      setAppUser(updated);
+      router.replace('/');
     } catch (e: any) {
       setError(e?.message ?? 'Greška pri čuvanju profila. Pokušaj ponovo.');
     } finally {
@@ -114,7 +123,7 @@ export default function CompleteProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  title: { ...typography.h2, color: colors.textPrimary, marginTop: spacing.lg },
+  title: { ...typography.h2, color: colors.textPrimary, textAlign: 'center', marginTop: spacing.lg },
   subtitle: { ...typography.body, color: colors.textSecondary, marginTop: spacing.xs, marginBottom: spacing.lg },
   photoPicker: { alignSelf: 'center', marginBottom: spacing.lg },
   photo: { width: 100, height: 100, borderRadius: 50 },
@@ -128,7 +137,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  photoPlaceholderText: { color: colors.secondary, ...typography.label },
+  photoPlaceholderText: { color: colors.textOnPrimary, ...typography.label },
   card: { backgroundColor: colors.surface, borderRadius: 20, padding: spacing.lg, gap: spacing.md },
   label: { ...typography.bodyBold, color: colors.textPrimary },
   input: {
@@ -141,5 +150,5 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     backgroundColor: colors.surfaceAlt,
   },
-  error: { color: colors.danger, ...typography.small },
+  error: { color: colors.textOnPrimary, ...typography.small, fontWeight: '700' },
 });

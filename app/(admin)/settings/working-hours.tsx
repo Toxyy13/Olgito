@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Switch, ScrollView, Alert } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { ScreenContainer } from '../../../src/components/ScreenContainer';
+import { ScreenHeader } from '../../../src/components/ScreenHeader';
 import { Button } from '../../../src/components/Button';
 import { colors, radius, spacing, typography, calendarTheme } from '../../../src/theme';
 import {
@@ -85,7 +86,7 @@ export default function WorkingHoursScreen() {
 
   return (
     <ScreenContainer scroll>
-      <Text style={styles.title}>Radno vreme</Text>
+      <ScreenHeader title="Radno vreme" />
 
       <Text style={styles.section}>Nedeljni raspored (ponavlja se)</Text>
       {weekly &&
@@ -168,7 +169,7 @@ export default function WorkingHoursScreen() {
 }
 
 const styles = StyleSheet.create({
-  title: { ...typography.h2, color: colors.textPrimary, marginBottom: spacing.sm },
+  title: { ...typography.h2, color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.sm },
   section: { ...typography.bodyBold, color: colors.textPrimary, marginTop: spacing.lg, marginBottom: spacing.sm },
   dayRow: {
     flexDirection: 'row',

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TextInput, Switch } from 'react-native';
 import { ScreenContainer } from '../../../src/components/ScreenContainer';
+import { ScreenHeader } from '../../../src/components/ScreenHeader';
 import { Button } from '../../../src/components/Button';
 import { colors, radius, spacing, typography } from '../../../src/theme';
 import {
@@ -46,9 +47,10 @@ export default function ServicesSettingsScreen() {
 
   return (
     <ScreenContainer>
-      <Text style={styles.title}>Usluge i cenovnik</Text>
+      <ScreenHeader title="Usluge i cenovnik" />
 
       <FlatList
+        style={{ flex: 1 }}
         data={services}
         keyExtractor={(s) => s.id}
         contentContainerStyle={{ gap: spacing.sm, paddingBottom: spacing.lg }}
@@ -101,7 +103,7 @@ export default function ServicesSettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  title: { ...typography.h2, color: colors.textPrimary, marginBottom: spacing.md },
+  title: { ...typography.h2, color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.md },
   card: { backgroundColor: colors.surface, borderRadius: radius.md, padding: spacing.md, gap: spacing.sm },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   name: { ...typography.bodyBold, color: colors.textPrimary },

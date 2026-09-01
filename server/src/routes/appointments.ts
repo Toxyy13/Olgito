@@ -40,8 +40,21 @@ appointmentsRouter.get('/availability', (req, res) => {
   res.json({ busyRanges: rows.map((r) => ({ appointmentId: r.id, startTime: r.startTime, endTime: r.endTime })) });
 });
 
-// Admin: svi termini za dan, sa imenima.
+// Admin: svi termini za dan (date=), za opseg datuma (from=&to=, npr. za nedeljnu/mesečnu
+// zaradu), ili cela istorija jednog klijenta (clientId=), sa imenima.
 appointmentsRouter.get('/', requireAdmin, (req, res) => {
+  if (req.query.clientId) {
+    const rows = db
+      .prepare('SELECT * FROM appointments WHERE clientId = ? ORDER BY date DESC, startTime DESC')
+      .all(String(req.query.clientId)) as AppointmentRow[];
+    return res.json({ appointments: rows.map(toAppointment) });
+  }
+  if (req.query.from && req.query.to) {
+    const rows = db
+      .prepare('SELECT * FROM appointments WHERE date >= ? AND date <= ? ORDER BY date ASC, startTime ASC')
+      .all(String(req.query.from), String(req.query.to)) as AppointmentRow[];
+    return res.json({ appointments: rows.map(toAppointment) });
+  }
   const date = String(req.query.date ?? '');
   const rows = db.prepare('SELECT * FROM appointments WHERE date = ? ORDER BY startTime ASC').all(date) as AppointmentRow[];
   res.json({ appointments: rows.map(toAppointment) });

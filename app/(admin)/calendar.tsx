@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Pressable, Modal, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Pressable, Modal, TextInput, Alert, ScrollView } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
+import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { StatusBadge } from '../../src/components/StatusBadge';
 import { Button } from '../../src/components/Button';
 import { colors, radius, spacing, typography, calendarTheme } from '../../src/theme';
 import { watchAppointmentsForDate, cancelAppointment } from '../../src/api/appointments';
 import { createRescheduleRequest } from '../../src/api/rescheduleRequests';
+import { watchAllServices } from '../../src/api/services';
 import { todayISO } from '../../src/utils/time';
-import type { Appointment } from '../../src/types';
+import type { Appointment, ServiceType } from '../../src/types';
 
 // LocaleConfig se već postavlja u klijentskom kalendaru; ovde je siguran no-op ako je već setovan.
 if (!LocaleConfig.locales['sr']) {
@@ -22,16 +24,29 @@ if (!LocaleConfig.locales['sr']) {
   LocaleConfig.defaultLocale = 'sr';
 }
 
+const TODAY = todayISO();
+
 export default function AdminCalendarScreen() {
-  const [selectedDate, setSelectedDate] = useState(todayISO());
+  const [selectedDate, setSelectedDate] = useState(TODAY);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [todayAppointments, setTodayAppointments] = useState<Appointment[]>([]);
   const [detail, setDetail] = useState<Appointment | null>(null);
   const [rescheduleMsg, setRescheduleMsg] = useState('');
   const [showReschedule, setShowReschedule] = useState(false);
+  const [services, setServices] = useState<ServiceType[]>([]);
 
   useEffect(() => watchAppointmentsForDate(selectedDate, setAppointments), [selectedDate]);
+  useEffect(() => watchAppointmentsForDate(TODAY, setTodayAppointments), []);
+  useEffect(() => watchAllServices(setServices), []);
+
+  // Cena za naplatu = zbir cena izabranih usluga × broj osoba (svi dobijaju istu kombinaciju).
+  const priceFor = (item: Appointment) => {
+    const perPerson = item.serviceIds.reduce((sum, id) => sum + (services.find((s) => s.id === id)?.price ?? 0), 0);
+    return perPerson * item.peopleCount;
+  };
 
   const activeAppointments = appointments.filter((a) => a.status !== 'otkazano');
+  const activeToday = todayAppointments.filter((a) => a.status !== 'otkazano');
 
   const handleCancel = (item: Appointment) => {
     Alert.alert('Otkazivanje termina', `Otkazati termin za ${item.clientName}?`, [
@@ -56,21 +71,52 @@ export default function AdminCalendarScreen() {
     Alert.alert('Poslato', 'Klijent je obavešten da pomeri termin.');
   };
 
+  // Sve iznad liste termina (header, "Danas" traka, kalendar, ukupan iznos)
+  // ide u ListHeaderComponent tako da ceo ekran ima jednog vlasnika skrola —
+  // bitno na malim telefonima da se sve može videti/skrolovati.
   return (
     <ScreenContainer>
-      <Text style={styles.title}>Kalendar</Text>
-      <Calendar
-        current={selectedDate}
-        onDayPress={(d) => setSelectedDate(d.dateString)}
-        markedDates={{ [selectedDate]: { selected: true, selectedColor: colors.secondary } }}
-        theme={calendarTheme}
-        style={styles.calendar}
-      />
-
       <FlatList
+        style={{ flex: 1 }}
         data={activeAppointments}
         keyExtractor={(a) => a.id}
-        contentContainerStyle={{ gap: spacing.sm, paddingTop: spacing.md, paddingBottom: spacing.xl }}
+        contentContainerStyle={{ gap: spacing.sm, paddingBottom: spacing.xl }}
+        ListHeaderComponent={
+          <View>
+            <ScreenHeader title="Kalendar" />
+
+            <Text style={styles.sectionTitle}>Danas ({TODAY})</Text>
+            {activeToday.length === 0 ? (
+              <Text style={styles.empty}>Nema termina za danas.</Text>
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.todayRow}>
+                {activeToday.map((item) => (
+                  <Pressable key={item.id} style={[styles.todayCard, statusBorder(item.status)]} onPress={() => setDetail(item)}>
+                    <Text style={styles.todayTime}>{item.startTime}</Text>
+                    <Text style={styles.todayName} numberOfLines={1}>
+                      {item.clientName}
+                    </Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            )}
+
+            <Calendar
+              current={selectedDate}
+              onDayPress={(d) => setSelectedDate(d.dateString)}
+              markedDates={{ [selectedDate]: { selected: true, selectedColor: colors.secondary } }}
+              theme={calendarTheme}
+              style={styles.calendar}
+            />
+
+            <View style={styles.dayTotalRow}>
+              <Text style={styles.sectionTitle}>Termini za {selectedDate}</Text>
+              {activeAppointments.length > 0 && (
+                <Text style={styles.dayTotal}>Ukupno: {activeAppointments.reduce((sum, a) => sum + priceFor(a), 0)} RSD</Text>
+              )}
+            </View>
+          </View>
+        }
         ListEmptyComponent={<Text style={styles.empty}>Nema termina za ovaj dan.</Text>}
         renderItem={({ item }) => (
           <Pressable style={[styles.card, statusBorder(item.status)]} onPress={() => setDetail(item)}>
@@ -81,7 +127,13 @@ export default function AdminCalendarScreen() {
               <StatusBadge status={item.status} />
             </View>
             <Text style={styles.clientName}>{item.clientName}</Text>
-            <Text style={styles.services}>{item.serviceNames.join(', ')}</Text>
+            <View style={styles.cardRow}>
+              <Text style={styles.services}>
+                {item.serviceNames.join(', ')}
+                {item.peopleCount > 1 ? ` • ${item.peopleCount} osobe` : ''}
+              </Text>
+              <Text style={styles.price}>{priceFor(item)} RSD</Text>
+            </View>
           </Pressable>
         )}
       />
@@ -100,6 +152,10 @@ export default function AdminCalendarScreen() {
                 <Text style={styles.modalLine}>{detail.serviceNames.join(', ')}</Text>
                 <Text style={styles.modalLine}>{detail.peopleCount} osoba/e</Text>
                 {!!detail.note && <Text style={styles.modalNote}>Napomena: {detail.note}</Text>}
+                <View style={styles.priceBox}>
+                  <Text style={styles.priceBoxLabel}>Za naplatu</Text>
+                  <Text style={styles.priceBoxValue}>{priceFor(detail)} RSD</Text>
+                </View>
 
                 {showReschedule ? (
                   <View style={{ gap: spacing.sm }}>
@@ -147,14 +203,39 @@ function statusBorder(status: Appointment['status']) {
 }
 
 const styles = StyleSheet.create({
-  title: { ...typography.h2, color: colors.textPrimary, marginBottom: spacing.sm },
-  calendar: { borderRadius: radius.md, overflow: 'hidden' },
-  empty: { color: colors.textSecondary, ...typography.body, textAlign: 'center', marginTop: spacing.xl },
+  sectionTitle: { ...typography.bodyBold, color: colors.textPrimary, marginBottom: spacing.sm, marginTop: spacing.sm },
+  dayTotalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  dayTotal: { ...typography.bodyBold, color: colors.sun },
+  calendar: { borderRadius: radius.md, overflow: 'hidden', marginTop: spacing.md },
+  empty: { color: colors.textSecondary, ...typography.body, marginBottom: spacing.sm },
+  todayRow: { gap: spacing.sm, paddingBottom: spacing.xs },
+  todayCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    minWidth: 100,
+  },
+  todayTime: { ...typography.bodyBold, color: colors.textPrimary },
+  todayName: { color: colors.textSecondary, ...typography.small },
   card: { backgroundColor: colors.surface, borderRadius: radius.md, padding: spacing.md, gap: 4 },
   cardRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   time: { ...typography.bodyBold, color: colors.textPrimary },
   clientName: { ...typography.body, color: colors.textPrimary },
-  services: { color: colors.textSecondary, ...typography.small },
+  services: { color: colors.textSecondary, ...typography.small, flex: 1 },
+  price: { color: colors.textOnPrimary, ...typography.small, fontWeight: '800' },
+  priceBox: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: radius.sm,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    marginTop: spacing.xs,
+  },
+  priceBoxLabel: { color: colors.textPrimary, ...typography.bodyBold },
+  priceBoxValue: { color: colors.textOnPrimary, ...typography.h3 },
   modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   modalCard: {
     backgroundColor: colors.surface,

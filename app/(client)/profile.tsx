@@ -10,7 +10,7 @@ export default function ProfileScreen() {
   if (!appUser) return null;
 
   return (
-    <ScreenContainer>
+    <ScreenContainer scroll>
       <View style={styles.header}>
         {appUser.photoURL ? (
           <Image source={{ uri: appUser.photoURL }} style={styles.photo} />

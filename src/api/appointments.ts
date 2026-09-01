@@ -46,3 +46,15 @@ export function watchAppointmentsForDate(dateISO: string, cb: (appointments: App
 export function watchAppointmentsForClient(_clientId: string, cb: (appointments: Appointment[]) => void) {
   return poll(() => apiFetch<{ appointments: Appointment[] }>('/appointments/mine').then((r) => r.appointments), cb);
 }
+
+// Admin: istorija zakazivanja jednog konkretnog klijenta.
+export async function getClientAppointmentHistory(clientId: string): Promise<Appointment[]> {
+  const res = await apiFetch<{ appointments: Appointment[] }>(`/appointments?clientId=${clientId}`);
+  return res.appointments;
+}
+
+// Admin: termini u opsegu datuma (za dnevnu/nedeljnu/mesečnu zaradu).
+export async function getAppointmentsForRange(fromISO: string, toISO: string): Promise<Appointment[]> {
+  const res = await apiFetch<{ appointments: Appointment[] }>(`/appointments?from=${fromISO}&to=${toISO}`);
+  return res.appointments;
+}

@@ -1,13 +1,14 @@
 // Tropska paleta — vesela i šarena. Pravilo: tekst je uvek beo, pozadina iza
 // teksta je uvek neka jarka boja (nikad bela/svetla pozadina sa tamnim tekstom).
 export const colors = {
-  // Brend boje
-  primary: '#FF6F59', // korala
-  primaryDark: '#E5503B',
+  // Brend boje — primary (dugmad/akcije) namerno druga nijansa od surface
+  // (kartice), inače se dugme "utopi" u karticu iza sebe.
+  primary: '#FF3E80', // pink — glavne akcije (dugmad)
+  primaryDark: '#E0246A',
   secondary: '#00BFB3', // tirkizna
   secondaryDark: '#009C92',
-  accent: '#FF3E80', // pink
-  sun: '#FFC93C', // sunčano žuta (koristi se za akcente, ne za status)
+  accent: '#FFC93C', // sunčano žuta, za posebne isticanja (hitno i sl.)
+  sun: '#FFC93C',
 
   // Pozadine i površine — sve jarke, nikad bele/kremaste
   background: '#0F8B8D', // duboka tirkizna, platno ekrana

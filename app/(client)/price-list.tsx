@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
+import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { watchActiveServices } from '../../src/api/services';
 import type { ServiceType } from '../../src/types';
@@ -12,11 +13,12 @@ export default function PriceListScreen() {
 
   return (
     <ScreenContainer>
-      <Text style={styles.title}>Cenovnik 💸</Text>
+      <ScreenHeader title="Cenovnik 💸" />
       <FlatList
+        style={{ flex: 1 }}
         data={services}
         keyExtractor={(s) => s.id}
-        contentContainerStyle={{ gap: spacing.sm, paddingBottom: spacing.xl }}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', gap: spacing.sm, paddingBottom: spacing.xl }}
         renderItem={({ item }) => (
           <View style={styles.row}>
             <Text style={styles.name}>{item.name}</Text>
@@ -29,7 +31,7 @@ export default function PriceListScreen() {
 }
 
 const styles = StyleSheet.create({
-  title: { ...typography.h2, color: colors.textPrimary, marginBottom: spacing.md },
+  title: { ...typography.h2, color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.md },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -40,5 +42,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
   name: { ...typography.bodyBold, color: colors.textPrimary },
-  price: { ...typography.bodyBold, color: colors.primary },
+  price: { ...typography.bodyBold, color: colors.textOnPrimary },
 });

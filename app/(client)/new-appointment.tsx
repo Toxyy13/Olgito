@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, Alert } from 
 import { Calendar } from 'react-native-calendars';
 import { useRouter } from 'expo-router';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
+import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { Button } from '../../src/components/Button';
 import { colors, radius, spacing, typography, calendarTheme } from '../../src/theme';
 import { useAuth } from '../../src/context/AuthContext';
@@ -89,7 +90,7 @@ export default function NewAppointmentScreen() {
 
   return (
     <ScreenContainer scroll>
-      <Text style={styles.title}>Novi termin</Text>
+      <ScreenHeader title="Novi termin" />
 
       <Text style={styles.label}>Usluge</Text>
       <View style={styles.chipsRow}>
@@ -160,7 +161,7 @@ export default function NewAppointmentScreen() {
 }
 
 const styles = StyleSheet.create({
-  title: { ...typography.h2, color: colors.textPrimary, marginBottom: spacing.md },
+  title: { ...typography.h2, color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.md },
   label: { ...typography.bodyBold, color: colors.textPrimary, marginTop: spacing.lg, marginBottom: spacing.sm },
   chipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   chip: {

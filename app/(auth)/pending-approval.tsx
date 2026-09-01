@@ -8,7 +8,7 @@ import { colors, spacing, typography } from '../../src/theme';
 export default function PendingApprovalScreen() {
   const { logout } = useAuth();
   return (
-    <ScreenContainer>
+    <ScreenContainer scroll>
       <View style={styles.center}>
         <Text style={styles.emoji}>⏳</Text>
         <Text style={styles.title}>Tvoj nalog čeka odobrenje</Text>

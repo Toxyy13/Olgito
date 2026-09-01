@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Image } from 'react-native';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
+import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { Button } from '../../src/components/Button';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { watchPendingClients, approveClient, rejectClient } from '../../src/api/users';
@@ -13,11 +14,12 @@ export default function NewClientsScreen() {
 
   return (
     <ScreenContainer>
-      <Text style={styles.title}>Novi klijenti</Text>
+      <ScreenHeader title="Novi klijenti" />
       <FlatList
+        style={{ flex: 1 }}
         data={pending}
         keyExtractor={(u) => u.uid}
-        contentContainerStyle={{ gap: spacing.md, paddingBottom: spacing.xl }}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', gap: spacing.md, paddingBottom: spacing.xl }}
         ListEmptyComponent={<Text style={styles.empty}>Nema naloga na čekanju.</Text>}
         renderItem={({ item }) => (
           <View style={styles.card}>
@@ -47,7 +49,7 @@ export default function NewClientsScreen() {
 }
 
 const styles = StyleSheet.create({
-  title: { ...typography.h2, color: colors.textPrimary, marginBottom: spacing.md },
+  title: { ...typography.h2, color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.md },
   empty: { color: colors.textSecondary, ...typography.body, textAlign: 'center', marginTop: spacing.xl },
   card: { backgroundColor: colors.surface, borderRadius: radius.md, padding: spacing.md, gap: spacing.md },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },

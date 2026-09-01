@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
+import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { Button } from '../../src/components/Button';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { watchOpenUrgentRequests, resolveUrgentRequest } from '../../src/api/urgentRequests';
@@ -15,11 +16,12 @@ export default function UrgentRequestsScreen() {
 
   return (
     <ScreenContainer>
-      <Text style={styles.title}>Hitni zahtevi 🚨</Text>
+      <ScreenHeader title="Hitni zahtevi 🚨" />
       <FlatList
+        style={{ flex: 1 }}
         data={open}
         keyExtractor={(r) => r.id}
-        contentContainerStyle={{ gap: spacing.md, paddingBottom: spacing.xl }}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', gap: spacing.md, paddingBottom: spacing.xl }}
         ListEmptyComponent={<Text style={styles.empty}>Nema aktivnih hitnih zahteva.</Text>}
         renderItem={({ item }) => (
           <View style={styles.card}>
@@ -35,7 +37,7 @@ export default function UrgentRequestsScreen() {
 }
 
 const styles = StyleSheet.create({
-  title: { ...typography.h2, color: colors.textPrimary, marginBottom: spacing.md },
+  title: { ...typography.h2, color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.md },
   empty: { color: colors.textSecondary, ...typography.body, textAlign: 'center', marginTop: spacing.xl },
   card: {
     backgroundColor: colors.surface,
