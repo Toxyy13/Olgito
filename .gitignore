@@ -40,3 +40,14 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Firebase
+functions/lib/
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Google service config (nabavlja se iz Firebase Console, ne ide u git)
+google-services.json
+GoogleService-Info.plist

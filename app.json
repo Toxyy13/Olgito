@@ -12,10 +12,12 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.olgito.app"
+      "bundleIdentifier": "com.olgito.app",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "package": "com.olgito.app",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
