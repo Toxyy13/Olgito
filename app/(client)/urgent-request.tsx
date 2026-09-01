@@ -4,7 +4,7 @@ import { ScreenContainer } from '../../src/components/ScreenContainer';
 import { Button } from '../../src/components/Button';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { useAuth } from '../../src/context/AuthContext';
-import { createUrgentRequest } from '../../src/firebase/urgentRequests';
+import { createUrgentRequest } from '../../src/api/urgentRequests';
 
 export default function UrgentRequestScreen() {
   const { appUser } = useAuth();

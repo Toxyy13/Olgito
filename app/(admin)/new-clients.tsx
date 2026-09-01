@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, FlatList, Image } from 'react-native';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
 import { Button } from '../../src/components/Button';
 import { colors, radius, spacing, typography } from '../../src/theme';
-import { watchPendingClients, approveClient, rejectClient } from '../../src/firebase/users';
+import { watchPendingClients, approveClient, rejectClient } from '../../src/api/users';
 import type { AppUser } from '../../src/types';
 
 export default function NewClientsScreen() {

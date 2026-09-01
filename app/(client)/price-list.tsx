@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
 import { colors, radius, spacing, typography } from '../../src/theme';
-import { watchActiveServices } from '../../src/firebase/services';
+import { watchActiveServices } from '../../src/api/services';
 import type { ServiceType } from '../../src/types';
 
 export default function PriceListScreen() {

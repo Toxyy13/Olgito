@@ -4,12 +4,12 @@ import { Calendar } from 'react-native-calendars';
 import { useRouter } from 'expo-router';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
 import { Button } from '../../src/components/Button';
-import { colors, radius, spacing, typography } from '../../src/theme';
+import { colors, radius, spacing, typography, calendarTheme } from '../../src/theme';
 import { useAuth } from '../../src/context/AuthContext';
-import { watchActiveServices } from '../../src/firebase/services';
-import { getEffectiveDayHours } from '../../src/firebase/workingHours';
-import { getBusyRangesOnce } from '../../src/firebase/availability';
-import { createAppointment } from '../../src/firebase/appointments';
+import { watchActiveServices } from '../../src/api/services';
+import { getEffectiveDayHours } from '../../src/api/workingHours';
+import { getBusyRangesOnce } from '../../src/api/availability';
+import { createAppointment } from '../../src/api/appointments';
 import { computeAvailableStartTimes } from '../../src/utils/time';
 import type { ServiceType, DayHours } from '../../src/types';
 import { todayISO } from '../../src/utils/time';
@@ -120,8 +120,8 @@ export default function NewAppointmentScreen() {
         current={selectedDate}
         minDate={todayISO()}
         onDayPress={(d) => setSelectedDate(d.dateString)}
-        markedDates={{ [selectedDate]: { selected: true, selectedColor: colors.primary } }}
-        theme={{ todayTextColor: colors.secondary, arrowColor: colors.primary, selectedDayBackgroundColor: colors.primary }}
+        markedDates={{ [selectedDate]: { selected: true, selectedColor: colors.secondary } }}
+        theme={calendarTheme}
         style={styles.calendar}
       />
 

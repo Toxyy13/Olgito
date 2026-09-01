@@ -2,16 +2,17 @@ import React, { useState } from 'react';
 import { Text, TextInput, View, StyleSheet, Image, Pressable } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../src/context/AuthContext';
-import { completeProfile } from '../../src/firebase/users';
-import { uploadProfilePhoto } from '../../src/firebase/storage';
+import { completeProfile } from '../../src/api/users';
+import { uploadProfilePhoto } from '../../src/api/upload';
 import { Button } from '../../src/components/Button';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
 import { colors, spacing, typography } from '../../src/theme';
 
 export default function CompleteProfileScreen() {
-  const { firebaseUser } = useAuth();
+  const { appUser } = useAuth();
   const [fullName, setFullName] = useState('');
   const [age, setAge] = useState('');
+  const [phone, setPhone] = useState('');
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,16 +42,20 @@ export default function CompleteProfileScreen() {
       setError('Unesi ispravan broj godina.');
       return;
     }
-    if (!firebaseUser) return;
+    if (phone.trim().length < 5) {
+      setError('Unesi broj telefona.');
+      return;
+    }
+    if (!appUser) return;
     setLoading(true);
     try {
       let photoURL: string | null = null;
       if (photoUri) {
-        photoURL = await uploadProfilePhoto(firebaseUser.uid, photoUri);
+        photoURL = await uploadProfilePhoto(appUser.uid, photoUri);
       }
-      await completeProfile(firebaseUser.uid, { fullName: fullName.trim(), age: ageNum, photoURL });
+      await completeProfile(appUser.uid, { fullName: fullName.trim(), age: ageNum, phone: phone.trim(), photoURL });
     } catch (e: any) {
-      setError('Greška pri čuvanju profila. Pokušaj ponovo.');
+      setError(e?.message ?? 'Greška pri čuvanju profila. Pokušaj ponovo.');
     } finally {
       setLoading(false);
     }
@@ -78,6 +83,16 @@ export default function CompleteProfileScreen() {
           value={fullName}
           onChangeText={setFullName}
           placeholder="Marko Marković"
+          placeholderTextColor={colors.textSecondary}
+        />
+
+        <Text style={styles.label}>Broj telefona</Text>
+        <TextInput
+          style={styles.input}
+          value={phone}
+          onChangeText={setPhone}
+          keyboardType="phone-pad"
+          placeholder="+381601234567"
           placeholderTextColor={colors.textSecondary}
         />
 

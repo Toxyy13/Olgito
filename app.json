@@ -12,12 +12,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.olgito.app",
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "bundleIdentifier": "com.olgito.app"
     },
     "android": {
       "package": "com.olgito.app",
-      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -31,20 +29,10 @@
     },
     "plugins": [
       "expo-router",
-      "@react-native-firebase/app",
-      "@react-native-firebase/auth",
       [
         "expo-image-picker",
         {
           "photosPermission": "Olgito treba pristup galeriji da bi postavio/la profilnu sliku."
-        }
-      ],
-      [
-        "expo-build-properties",
-        {
-          "ios": {
-            "useFrameworks": "dynamic"
-          }
         }
       ],
       "expo-font",
@@ -53,7 +41,8 @@
         {
           "color": "#FF6F59"
         }
-      ]
+      ],
+      "expo-secure-store"
     ]
   }
 }

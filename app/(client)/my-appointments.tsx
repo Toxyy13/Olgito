@@ -5,7 +5,7 @@ import { StatusBadge } from '../../src/components/StatusBadge';
 import { Button } from '../../src/components/Button';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { useAuth } from '../../src/context/AuthContext';
-import { watchAppointmentsForClient, cancelAppointment, confirmAppointment } from '../../src/firebase/appointments';
+import { watchAppointmentsForClient, cancelAppointment, confirmAppointment } from '../../src/api/appointments';
 import type { Appointment } from '../../src/types';
 
 export default function MyAppointmentsScreen() {

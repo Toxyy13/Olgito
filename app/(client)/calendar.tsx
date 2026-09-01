@@ -2,9 +2,9 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
-import { colors, radius, spacing, typography } from '../../src/theme';
-import { getEffectiveDayHours } from '../../src/firebase/workingHours';
-import { watchBusyRanges, type AvailabilityRange } from '../../src/firebase/availability';
+import { colors, radius, spacing, typography, calendarTheme } from '../../src/theme';
+import { getEffectiveDayHours } from '../../src/api/workingHours';
+import { watchBusyRanges, type AvailabilityRange } from '../../src/api/availability';
 import { generateSlotStarts, addMinutesToTime, rangesOverlap } from '../../src/utils/time';
 import { SLOT_MINUTES, type DayHours } from '../../src/types';
 
@@ -58,12 +58,8 @@ export default function ClientCalendarScreen() {
         current={selectedDate}
         minDate={todayISO()}
         onDayPress={(d) => setSelectedDate(d.dateString)}
-        markedDates={{ [selectedDate]: { selected: true, selectedColor: colors.primary } }}
-        theme={{
-          todayTextColor: colors.secondary,
-          arrowColor: colors.primary,
-          selectedDayBackgroundColor: colors.primary,
-        }}
+        markedDates={{ [selectedDate]: { selected: true, selectedColor: colors.secondary } }}
+        theme={calendarTheme}
         style={styles.calendar}
       />
 
@@ -94,6 +90,6 @@ const styles = StyleSheet.create({
   slot: { flex: 1, paddingVertical: spacing.sm, borderRadius: radius.sm, alignItems: 'center' },
   slotFree: { backgroundColor: colors.slotSlobodan, borderWidth: 1, borderColor: colors.slotSlobodanBorder },
   slotBusy: { backgroundColor: colors.slotZauzet },
-  slotFreeText: { color: colors.secondaryDark, ...typography.small, fontWeight: '700' },
-  slotBusyText: { color: colors.slotZauzetText, ...typography.small },
+  slotFreeText: { color: colors.textOnPrimary, ...typography.small, fontWeight: '700' },
+  slotBusyText: { color: colors.textOnPrimary, ...typography.small },
 });

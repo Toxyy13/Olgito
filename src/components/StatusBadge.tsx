@@ -9,32 +9,26 @@ const STATUS_LABEL: Record<AppointmentStatus, string> = {
   otkazano: 'Otkazano',
 };
 
-const STATUS_COLOR: Record<AppointmentStatus, { fg: string; bg: string }> = {
-  zakazano: { fg: colors.statusZakazano, bg: colors.statusZakazanoBg },
-  potvrdjeno: { fg: colors.statusPotvrdjeno, bg: colors.statusPotvrdjenoBg },
-  otkazano: { fg: colors.statusOtkazano, bg: colors.statusOtkazanoBg },
+const STATUS_COLOR: Record<AppointmentStatus, string> = {
+  zakazano: colors.statusZakazano,
+  potvrdjeno: colors.statusPotvrdjeno,
+  otkazano: colors.statusOtkazano,
 };
 
 export function StatusBadge({ status }: { status: AppointmentStatus }) {
-  const c = STATUS_COLOR[status];
   return (
-    <View style={[styles.badge, { backgroundColor: c.bg }]}>
-      <View style={[styles.dot, { backgroundColor: c.fg }]} />
-      <Text style={[styles.text, { color: c.fg }]}>{STATUS_LABEL[status]}</Text>
+    <View style={[styles.badge, { backgroundColor: STATUS_COLOR[status] }]}>
+      <Text style={styles.text}>{STATUS_LABEL[status]}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
     alignSelf: 'flex-start',
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.sm,
     borderRadius: radius.pill,
-    gap: 6,
   },
-  dot: { width: 8, height: 8, borderRadius: 4 },
-  text: { ...typography.label },
+  text: { ...typography.label, color: colors.textOnPrimary },
 });

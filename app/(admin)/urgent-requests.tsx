@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
 import { Button } from '../../src/components/Button';
 import { colors, radius, spacing, typography } from '../../src/theme';
-import { watchOpenUrgentRequests, resolveUrgentRequest } from '../../src/firebase/urgentRequests';
+import { watchOpenUrgentRequests, resolveUrgentRequest } from '../../src/api/urgentRequests';
 import type { UrgentRequest } from '../../src/types';
 
 export default function UrgentRequestsScreen() {

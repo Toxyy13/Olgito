@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TextInput, Switch, ScrollView, Alert } from 're
 import { Calendar } from 'react-native-calendars';
 import { ScreenContainer } from '../../../src/components/ScreenContainer';
 import { Button } from '../../../src/components/Button';
-import { colors, radius, spacing, typography } from '../../../src/theme';
+import { colors, radius, spacing, typography, calendarTheme } from '../../../src/theme';
 import {
   watchWeeklyDefault,
   setDayHours,
@@ -13,7 +13,7 @@ import {
   getBlockedSlotsForDate,
   addBlockedSlot,
   removeBlockedSlot,
-} from '../../../src/firebase/workingHours';
+} from '../../../src/api/workingHours';
 import type { WeeklyDefaultHours, Weekday, BlockedSlot } from '../../../src/types';
 import { todayISO } from '../../../src/utils/time';
 
@@ -124,8 +124,8 @@ export default function WorkingHoursScreen() {
       <Calendar
         current={selectedDate}
         onDayPress={(d) => setSelectedDate(d.dateString)}
-        markedDates={{ [selectedDate]: { selected: true, selectedColor: colors.primary } }}
-        theme={{ todayTextColor: colors.secondary, arrowColor: colors.primary, selectedDayBackgroundColor: colors.primary }}
+        markedDates={{ [selectedDate]: { selected: true, selectedColor: colors.secondary } }}
+        theme={calendarTheme}
         style={styles.calendar}
       />
       <View style={styles.card}>

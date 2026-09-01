@@ -5,7 +5,7 @@ import { useAuth } from '../src/context/AuthContext';
 import { colors } from '../src/theme';
 
 export default function Index() {
-  const { firebaseUser, appUser, initializing } = useAuth();
+  const { appUser, initializing } = useAuth();
 
   if (initializing) {
     return (
@@ -15,16 +15,7 @@ export default function Index() {
     );
   }
 
-  if (!firebaseUser) return <Redirect href="/(auth)/login" />;
-
-  // appUser se učitava skoro odmah posle firebaseUser-a (Firestore listener).
-  if (!appUser) {
-    return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
-  }
+  if (!appUser) return <Redirect href="/(auth)/login" />;
 
   if (appUser.accountStatus === 'blocked') return <Redirect href="/(auth)/blocked" />;
 

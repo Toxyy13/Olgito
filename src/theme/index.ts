@@ -26,6 +26,27 @@ export const typography = {
   label: { fontSize: 13, fontWeight: '600' as const },
 };
 
-export const theme = { colors, spacing, radius, typography };
+// Deljena tema za react-native-calendars — kartica ostaje jarka (korala) sa belim tekstom,
+// u skladu sa ostatkom aplikacije.
+export const calendarTheme = {
+  calendarBackground: colors.surface,
+  dayTextColor: colors.textPrimary,
+  monthTextColor: colors.textPrimary,
+  textSectionTitleColor: colors.textSecondary,
+  textDisabledColor: 'rgba(255,255,255,0.35)',
+  todayTextColor: colors.sun,
+  arrowColor: colors.textOnPrimary,
+  selectedDayBackgroundColor: colors.secondary,
+  selectedDayTextColor: colors.textOnPrimary,
+  'stylesheet.calendar.header': {
+    week: {
+      marginTop: 5,
+      flexDirection: 'row' as const,
+      justifyContent: 'space-between',
+    },
+  },
+};
+
+export const theme = { colors, spacing, radius, typography, calendarTheme };
 export { colors };
 export type Theme = typeof theme;

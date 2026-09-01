@@ -1,46 +1,34 @@
 import React, { useState } from 'react';
-import { Text, TextInput, View, StyleSheet } from 'react-native';
+import { Text, TextInput, View, StyleSheet, Pressable } from 'react-native';
 import { useAuth } from '../../src/context/AuthContext';
 import { Button } from '../../src/components/Button';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
 import { colors, spacing, typography } from '../../src/theme';
 
 export default function LoginScreen() {
-  const { sendCode, confirmCode, confirmation } = useAuth();
-  const [phone, setPhone] = useState('+381');
-  const [code, setCode] = useState('');
+  const { login, register } = useAuth();
+  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const step: 'phone' | 'code' = confirmation ? 'code' : 'phone';
-
-  const handleSendCode = async () => {
+  const handleSubmit = async () => {
     setError(null);
-    if (!/^\+\d{8,15}$/.test(phone.trim())) {
-      setError('Unesi broj telefona u formatu +381...');
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) {
+      setError('Unesi ispravnu email adresu.');
+      return;
+    }
+    if (password.length < 6) {
+      setError('Lozinka mora imati bar 6 karaktera.');
       return;
     }
     setLoading(true);
     try {
-      await sendCode(phone.trim());
+      if (mode === 'login') await login(email.trim(), password);
+      else await register(email.trim(), password);
     } catch (e: any) {
-      setError(e?.message ?? 'Greška pri slanju SMS koda.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleConfirm = async () => {
-    setError(null);
-    if (code.trim().length < 4) {
-      setError('Unesi kod koji si dobio/la SMS-om.');
-      return;
-    }
-    setLoading(true);
-    try {
-      await confirmCode(code.trim());
-    } catch (e: any) {
-      setError('Pogrešan kod. Pokušaj ponovo.');
+      setError(e?.message ?? 'Nešto nije u redu. Pokušaj ponovo.');
     } finally {
       setLoading(false);
     }
@@ -54,35 +42,37 @@ export default function LoginScreen() {
       </View>
 
       <View style={styles.card}>
-        {step === 'phone' ? (
-          <>
-            <Text style={styles.label}>Broj telefona</Text>
-            <TextInput
-              style={styles.input}
-              value={phone}
-              onChangeText={setPhone}
-              keyboardType="phone-pad"
-              placeholder="+381601234567"
-              placeholderTextColor={colors.textSecondary}
-            />
-            {error && <Text style={styles.error}>{error}</Text>}
-            <Button title="Pošalji kod" onPress={handleSendCode} loading={loading} />
-          </>
-        ) : (
-          <>
-            <Text style={styles.label}>Unesi kod poslat na {phone}</Text>
-            <TextInput
-              style={styles.input}
-              value={code}
-              onChangeText={setCode}
-              keyboardType="number-pad"
-              placeholder="123456"
-              placeholderTextColor={colors.textSecondary}
-            />
-            {error && <Text style={styles.error}>{error}</Text>}
-            <Button title="Potvrdi" onPress={handleConfirm} loading={loading} />
-          </>
-        )}
+        <Text style={styles.label}>Email adresa</Text>
+        <TextInput
+          style={styles.input}
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoComplete="email"
+          placeholder="ime@primer.com"
+          placeholderTextColor={colors.textSecondary}
+        />
+
+        <Text style={styles.label}>Lozinka</Text>
+        <TextInput
+          style={styles.input}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          placeholder="••••••••"
+          placeholderTextColor={colors.textSecondary}
+        />
+
+        {error && <Text style={styles.error}>{error}</Text>}
+
+        <Button title={mode === 'login' ? 'Prijavi se' : 'Registruj se'} onPress={handleSubmit} loading={loading} />
+
+        <Pressable onPress={() => setMode(mode === 'login' ? 'register' : 'login')}>
+          <Text style={styles.switchText}>
+            {mode === 'login' ? 'Nemaš nalog? Registruj se' : 'Već imaš nalog? Prijavi se'}
+          </Text>
+        </Pressable>
       </View>
     </ScreenContainer>
   );
@@ -110,4 +100,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceAlt,
   },
   error: { color: colors.danger, ...typography.small },
+  switchText: { color: colors.secondary, textAlign: 'center', ...typography.small, marginTop: spacing.xs },
 });

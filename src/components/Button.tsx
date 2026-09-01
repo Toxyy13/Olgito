@@ -25,14 +25,14 @@ export function Button({ title, variant = 'primary', loading, disabled, ...rest 
       style={({ pressed }) => [
         styles.base,
         { backgroundColor: bg, opacity: pressed ? 0.85 : disabled ? 0.5 : 1 },
-        isOutline && { borderWidth: 2, borderColor: colors.primary },
+        isOutline && { borderWidth: 2, borderColor: colors.textOnPrimary },
       ]}
       {...rest}
     >
       {loading ? (
-        <ActivityIndicator color={isOutline ? colors.primary : colors.textOnPrimary} />
+        <ActivityIndicator color={colors.textOnPrimary} />
       ) : (
-        <Text style={[styles.text, isOutline && { color: colors.primary }]}>{title}</Text>
+        <Text style={styles.text}>{title}</Text>
       )}
     </Pressable>
   );

@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, FlatList, TextInput } from 'react-native';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
 import { Button } from '../../src/components/Button';
 import { colors, radius, spacing, typography } from '../../src/theme';
-import { watchAllClients, blockClient, unblockClient } from '../../src/firebase/users';
+import { watchAllClients, blockClient, unblockClient } from '../../src/api/users';
 import type { AppUser } from '../../src/types';
 
 export default function ClientsScreen() {

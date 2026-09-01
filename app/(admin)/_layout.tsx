@@ -8,8 +8,8 @@ export default function AdminTabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textSecondary,
+        tabBarActiveTintColor: colors.textOnPrimary,
+        tabBarInactiveTintColor: 'rgba(255,255,255,0.55)',
         tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
       }}
     >

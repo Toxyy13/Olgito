@@ -1,113 +1,95 @@
 # Olgito
 
-Mobilna aplikacija za zakazivanje termina kod frizera (Android + iOS, React Native / Expo + Firebase).
+Mobilna aplikacija za zakazivanje termina kod frizera (Android + iOS, React Native / Expo) + sopstveni server (Node.js + Express + SQLite) — bez Firebase-a, bez mesečnih troškova osim samog hostinga koji već imaš.
 
-## Šta je već urađeno
+## Struktura projekta
 
-- Cela app struktura (klijent + admin ekrani), navigacija, tropska tema
-- Prijava preko broja telefona (SMS kod) + dopuna profila (ime, godine, slika)
-- Zakazivanje termina (30 min po osobi), kalendar, otkazivanje, potvrda dolaska
-- Odobravanje/blokiranje klijenata, hitni zahtevi, zahtevi za pomeranje termina
-- Radno vreme (nedeljni raspored + izuzeci po datumu + pauze), usluge i cenovnik
-- Cloud Functions za notifikacije (nov termin, potvrda, otkazivanje, hitno, 24h podsetnik)
-- Firestore/Storage security rules
-
-Kod je napisan i tipski proveren (`npx tsc --noEmit` prolazi bez grešaka), ali **ne može da se testira na uređaju dok se ne poveže sa pravim Firebase projektom** — to zahteva tvoj Google nalog, pa taj deo moraš ti da odradiš (koraci ispod).
-
-## 1. Napravi Firebase projekat
-
-1. Idi na [console.firebase.google.com](https://console.firebase.google.com) → **Add project** → nazovi ga npr. "Olgito".
-2. **Authentication** → Sign-in method → uključi **Phone**.
-   - Preporuka za razvoj: u istom meniru dodaj par "Phone numbers for testing" (npr. `+381600000000` / kod `123456`) da ne trošiš prave SMS poruke dok testiraš.
-3. **Firestore Database** → Create database → production mode → izaberi region (npr. `eur3`).
-4. **Storage** → Get started (default bucket, isti region).
-5. **Project settings → General → Your apps**:
-   - Dodaj **Android** app: package name `com.olgito.app` → preuzmi `google-services.json` → stavi ga u koren projekta (`C:\Users\Todor\Desktop\Olgito\google-services.json`).
-   - Dodaj **iOS** app: bundle ID `com.olgito.app` → preuzmi `GoogleService-Info.plist` → stavi ga u koren projekta.
-   - Ovi fajlovi su namerno u `.gitignore` (ne idu na git).
-
-## 2. Poveži CLI sa projektom i podesi bazu
-
-```bash
-npm install -g firebase-tools
-firebase login
-firebase use --add
+```
+app/                    ekrani mobilne aplikacije (expo-router)
+  (auth)/                 prijava/registracija, dopuna profila, čekanje odobrenja, blokiran
+  (client)/                klijentski tabovi
+  (admin)/                 Olgičini tabovi (kalendar, klijenti, podešavanja...)
+src/
+  theme/                   boje, razmaci, tipografija (tropska paleta, beo tekst na jarkoj pozadini)
+  types/                    TS tipovi (isti na appu i na serveru)
+  api/                      pristup sopstvenom serveru (jedan fajl po celini, HTTP pozivi + JWT)
+  context/AuthContext.tsx   stanje prijavljenog korisnika (token se čuva u SecureStore)
+  components/               deljene UI komponente
+  utils/time.ts             računanje slobodnih termina (30 min slotovi)
+  notifications/            registracija push tokena (Expo push)
+server/                  sopstveni backend
+  src/db.ts                SQLite šema (fajl-baza, bez posebnog DB servera)
+  src/routes/               REST rute (auth, users, services, working-hours, appointments...)
+  src/reminders.ts          cron posao za 24h podsetnik
 ```
 
-(izaberi novokreirani projekat kad te pita)
+## Kako radi (ukratko)
 
-Deploy pravila i indeksa:
+- **Baza:** SQLite u jednom fajlu (`server/data/olgito.sqlite`) — nema poseban DB server za instaliranje/plaćanje.
+- **Prijava:** email + lozinka, JWT token (važi 180 dana) čuva se na telefonu u SecureStore-u — korisnik ostaje prijavljen dok se ručno ne odjavi.
+- **Slike profila:** čuvaju se direktno na serveru (`server/uploads/`), server ih servira kao statičke fajlove.
+- **"Realtime" osvežavanje:** pošto nema Firebase-ov realtime servis, aplikacija periodično (na par sekundi) osvežava kalendar/liste pozivima ka serveru — dovoljno brzo za ovu vrstu aplikacije.
+- **Push notifikacije:** i dalje idu preko **besplatnog** Expo push servisa (jedina veza sa Google/Apple infrastrukturom — neizbežna za mobilne notifikacije, ali ne košta ništa).
+- **Olgičin admin nalog:** pravi se automatski pri prvom pokretanju servera iz `.env` (`ADMIN_EMAIL`/`ADMIN_PASSWORD`) — nema ručnog podešavanja.
 
-```bash
-firebase deploy --only firestore:rules,firestore:indexes,storage:rules
-```
-
-## 3. Olgičin admin nalog
-
-Nalog se pravi automatski pri prvoj prijavi (kao klijent na čekanju), pa admin ulogu treba ručno postaviti:
-
-1. Neka se Olgica jednom uloguje u app (telefon `+381645331269` + SMS kod).
-2. U Firebase Console → Firestore → kolekcija `users` → pronađi njen dokument (po `phone`).
-3. Izmeni polja: `role` → `"admin"`, `accountStatus` → `"approved"`.
-
-Od tog trenutka njena prijava je uvek prepoznata kao admin.
-
-## 4. Cloud Functions
+## 1. Pokretanje servera
 
 ```bash
-cd functions
+cd server
 npm install
-npm run deploy
+cp .env.example .env
 ```
 
-(prvi put će tražiti da se izabere/potvrdi Blaze (pay-as-you-go) plan — Cloud Functions to zahtevaju, ali su besplatne do solidnog obima korišćenja)
+Otvori `server/.env` i popuni:
+- `JWT_SECRET` — bilo koji dugačak nasumičan string (npr. `openssl rand -hex 32`, ili samo ukucaj 40-50 nasumičnih karaktera)
+- `ADMIN_EMAIL` / `ADMIN_PASSWORD` — Olgičini podaci za prijavu (nalog se pravi automatski pri prvom pokretanju)
+- `PUBLIC_BASE_URL` — kad server bude na pravom serveru sa domenom, ovde ide npr. `https://api.olgito.rs` (dok testiraš lokalno, ostavi `http://localhost:4000`)
 
-## 5. EAS build (development client)
+Pokretanje za razvoj (automatski se restartuje na izmenu koda):
 
-Phone Auth i Firebase koriste native module, pa **Expo Go ne radi** — potreban je sopstveni "development build":
+```bash
+npm run dev
+```
+
+Provera da radi: otvori `http://localhost:4000/health` u browseru — treba da vidiš `{"ok":true}`.
+
+Za produkciju (na pravom serveru):
+
+```bash
+npm run build
+npm start
+```
+
+(preporuka: pokreni ga kroz `pm2` ili systemd servis da ostane živ posle restarta servera — javi kad budeš tu, pomažem oko toga kad budu poznati detalji tvog servera)
+
+## 2. Pokretanje mobilne aplikacije
+
+```bash
+cp .env.example .env
+```
+
+U `.env` postavi `EXPO_PUBLIC_API_URL` na adresu servera:
+- Test na fizičkom telefonu (ista Wi-Fi mreža kao računar): `http://<IP-ADRESA-RAČUNARA>:4000` (IP nađeš sa `ipconfig` na Windows-u)
+- Android emulator: `http://10.0.2.2:4000`
+- Kad server bude na pravom serveru: prava adresa/domen
+
+Pokretanje:
+
+```bash
+npm start
+```
+
+Skeniraj QR kod **Expo Go** aplikacijom na telefonu (Android: Expo Go sa Play Store-a; iOS: Expo Go sa App Store-a). Skoro ceo app radi normalno u Expo Go — jedino **prave push notifikacije** (ne lokalne) zahtevaju "development build" (EAS), pošto ih Expo Go od skorije verzije ne podržava. Za to:
 
 ```bash
 npm install -g eas-cli
 eas login
 eas init
-```
-
-`eas init` će upisati `projectId` u konfiguraciju — to je potrebno da push notifikacije rade.
-
-Zatim:
-
-```bash
 eas build --profile development --platform android
 ```
 
-(ili `--platform ios`, ali za iOS je potreban Apple Developer nalog)
+## Poznata pojednostavljenja
 
-Kad se build završi, instaliraj APK/link na telefon ili emulator, pa pokreni:
-
-```bash
-npx expo start --dev-client
-```
-
-## Poznata pojednostavljenja (za kasnije, ako zatreba)
-
-- **`availability` kolekcija** (javno vidljivi zauzeti termini, bez imena) trenutno prima upis direktno od klijenata u istoj transakciji kad zakazuju/otkazuju (radi atomske provere da niko ne zakaže isti termin dvaput). Kod male, poverljive baze korisnika ovo je bezbedno, ali teoretski poznati klijent bi mogao rizičnim pristupom da ometa taj dokument. Da se to potpuno zatvori, rezervacija bi trebalo da ide kroz jedan Cloud Function (callable) umesto direktno sa klijenta — nije urađeno sada da ne komplikujemo MVP.
+- Kalendar/liste se osvežavaju periodičnim proverama (polling), a ne trenutnim guranjem promena — u praksi kašnjenje je par sekundi, nezametno za ovu vrstu korišćenja.
 - Podsetnik 24h pre termina šalje se najkasnije u trenutku kad termin uđe u 24h prozor (ako je termin zakazan poslednjeg trenutka, podsetnik stiže odmah, ne tačno "24h pre").
-
-## Struktura projekta
-
-```
-app/                    ekrani (expo-router; folderi u zagradama ne utiču na URL)
-  (auth)/                prijava, dopuna profila, čekanje odobrenja, blokiran
-  (client)/               klijentski tabovi
-  (admin)/                Olgičini tabovi (kalendar, klijenti, podešavanja...)
-src/
-  theme/                 boje, razmaci, tipografija
-  types/                  TS tipovi (ogledaju Firestore šemu)
-  firebase/               pristup Firestore/Auth/Storage (jedan fajl po kolekciji)
-  context/AuthContext.tsx stanje prijavljenog korisnika
-  components/             deljene UI komponente
-  utils/time.ts           računanje slobodnih termina (30 min slotovi)
-  notifications/          registracija push tokena
-functions/                Cloud Functions (notifikacije, 24h podsetnik)
-firestore.rules / storage.rules   pravila pristupa
-```
+- Nema slanja emaila (npr. za reset lozinke) — kad zatreba, dodaje se SMTP servis (ima i besplatnih opcija za mali obim).

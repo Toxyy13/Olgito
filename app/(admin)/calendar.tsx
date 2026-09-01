@@ -4,9 +4,9 @@ import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
 import { StatusBadge } from '../../src/components/StatusBadge';
 import { Button } from '../../src/components/Button';
-import { colors, radius, spacing, typography } from '../../src/theme';
-import { watchAppointmentsForDate, cancelAppointment } from '../../src/firebase/appointments';
-import { createRescheduleRequest } from '../../src/firebase/rescheduleRequests';
+import { colors, radius, spacing, typography, calendarTheme } from '../../src/theme';
+import { watchAppointmentsForDate, cancelAppointment } from '../../src/api/appointments';
+import { createRescheduleRequest } from '../../src/api/rescheduleRequests';
 import { todayISO } from '../../src/utils/time';
 import type { Appointment } from '../../src/types';
 
@@ -62,8 +62,8 @@ export default function AdminCalendarScreen() {
       <Calendar
         current={selectedDate}
         onDayPress={(d) => setSelectedDate(d.dateString)}
-        markedDates={{ [selectedDate]: { selected: true, selectedColor: colors.primary } }}
-        theme={{ todayTextColor: colors.secondary, arrowColor: colors.primary, selectedDayBackgroundColor: colors.primary }}
+        markedDates={{ [selectedDate]: { selected: true, selectedColor: colors.secondary } }}
+        theme={calendarTheme}
         style={styles.calendar}
       />
 

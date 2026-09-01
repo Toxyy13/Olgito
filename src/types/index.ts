@@ -5,11 +5,12 @@ export type AccountStatus = 'pending' | 'approved' | 'blocked';
 export interface AppUser {
   uid: string;
   role: Role;
-  phone: string; // E.164 format, jedinstven po nalogu (garantovano Firebase Phone Auth-om)
+  email: string; // koristi se za prijavu (email + lozinka)
+  phone: string; // kontakt broj, unosi se pri dopuni profila
   fullName: string; // ime i prezime
   age: number | null;
   photoURL: string | null;
-  profileComplete: boolean; // true kad su fullName + age uneti (posle prve SMS prijave)
+  profileComplete: boolean; // true kad su fullName + age + phone uneti
   accountStatus: AccountStatus;
   expoPushToken?: string;
   createdAt: number;

@@ -1,58 +1,50 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import {
-  getAuth,
-  onAuthStateChanged,
-  signInWithPhoneNumber,
-  signOut,
-  type User,
-  type ConfirmationResult,
-} from '@react-native-firebase/auth';
-import { auth } from '../firebase/config';
-import { watchUser, createClientUser, getUserOnce, savePushToken } from '../firebase/users';
+import { apiRegister, apiLogin, apiGetMe } from '../api/auth';
+import { getToken, setToken as persistToken, poll } from '../api/client';
+import { savePushToken } from '../api/users';
 import { registerForPushNotificationsAsync } from '../notifications/push';
 import type { AppUser } from '../types';
 
 interface AuthContextValue {
-  firebaseUser: User | null;
   appUser: AppUser | null;
   initializing: boolean;
-  confirmation: ConfirmationResult | null;
-  sendCode: (e164Phone: string) => Promise<void>;
-  confirmCode: (code: string) => Promise<void>;
+  register: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [appUser, setAppUser] = useState<AppUser | null>(null);
   const [initializing, setInitializing] = useState(true);
-  const [confirmation, setConfirmation] = useState<ConfirmationResult | null>(null);
 
+  // Token se čuva u SecureStore, pa korisnik ostaje prijavljen posle gašenja
+  // aplikacije sve dok se ručno ne odjavi.
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(getAuth(), async (user) => {
-      setFirebaseUser(user);
-      if (!user) {
-        setAppUser(null);
+    (async () => {
+      const token = await getToken();
+      if (!token) {
         setInitializing(false);
         return;
       }
-      const existing = await getUserOnce(user.uid);
-      if (!existing && user.phoneNumber) {
-        // Prva prijava ovim brojem telefona — kreira se nalog klijenta na čekanju.
-        await createClientUser(user.uid, user.phoneNumber);
+      try {
+        const { user } = await apiGetMe();
+        setAppUser(user);
+      } catch {
+        await persistToken(null);
+      } finally {
+        setInitializing(false);
       }
-      setInitializing(false);
-    });
-    return unsubscribe;
+    })();
   }, []);
 
+  // Osvežava nalog periodično (npr. da klijent vidi kad ga Olgica odobri/blokira
+  // bez potrebe da se ponovo prijavljuje — nema realtime servera, pa se pollinguje).
   useEffect(() => {
-    if (!firebaseUser) return;
-    const unsubscribe = watchUser(firebaseUser.uid, setAppUser);
-    return unsubscribe;
-  }, [firebaseUser]);
+    if (initializing || !appUser) return;
+    return poll(() => apiGetMe().then((r) => r.user), setAppUser, 10000);
+  }, [initializing, !!appUser]);
 
   useEffect(() => {
     if (!appUser || appUser.accountStatus !== 'approved') return;
@@ -63,30 +55,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   }, [appUser?.uid, appUser?.accountStatus]);
 
-  const sendCode = useCallback(async (e164Phone: string) => {
-    const result = await signInWithPhoneNumber(auth, e164Phone);
-    setConfirmation(result);
+  const register = useCallback(async (email: string, password: string) => {
+    const { token, user } = await apiRegister(email, password);
+    await persistToken(token);
+    setAppUser(user);
   }, []);
 
-  const confirmCode = useCallback(
-    async (code: string) => {
-      if (!confirmation) throw new Error('Nema aktivnog zahteva za potvrdu koda.');
-      await confirmation.confirm(code);
-      setConfirmation(null);
-    },
-    [confirmation]
-  );
+  const login = useCallback(async (email: string, password: string) => {
+    const { token, user } = await apiLogin(email, password);
+    await persistToken(token);
+    setAppUser(user);
+  }, []);
 
   const logout = useCallback(async () => {
-    await signOut(auth);
+    await persistToken(null);
+    setAppUser(null);
   }, []);
 
   return (
-    <AuthContext.Provider
-      value={{ firebaseUser, appUser, initializing, confirmation, sendCode, confirmCode, logout }}
-    >
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={{ appUser, initializing, register, login, logout }}>{children}</AuthContext.Provider>
   );
 }
 

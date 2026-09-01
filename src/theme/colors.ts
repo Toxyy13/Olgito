@@ -1,4 +1,5 @@
-// Tropska paleta — vesela i šarena, u duhu Olgičinog stila.
+// Tropska paleta — vesela i šarena. Pravilo: tekst je uvek beo, pozadina iza
+// teksta je uvek neka jarka boja (nikad bela/svetla pozadina sa tamnim tekstom).
 export const colors = {
   // Brend boje
   primary: '#FF6F59', // korala
@@ -8,36 +9,32 @@ export const colors = {
   accent: '#FF3E80', // pink
   sun: '#FFC93C', // sunčano žuta (koristi se za akcente, ne za status)
 
-  // Pozadine i površine
-  background: '#FFF8F0', // topla krem
-  surface: '#FFFFFF',
-  surfaceAlt: '#FFF1E6',
+  // Pozadine i površine — sve jarke, nikad bele/kremaste
+  background: '#0F8B8D', // duboka tirkizna, platno ekrana
+  surface: '#FF6F59', // korala, pozadina kartica/sadržaja
+  surfaceAlt: '#E5503B', // tamnija korala, polja za unos i ugnježdeni elementi
 
-  // Tekst
-  textPrimary: '#2D2A26',
-  textSecondary: '#8A8078',
+  // Tekst — uvek bele nijanse (jer sedi na jarkoj pozadini)
+  textPrimary: '#FFFFFF',
+  textSecondary: 'rgba(255,255,255,0.75)',
   textOnPrimary: '#FFFFFF',
 
-  // Linije/okviri
-  border: '#F0E4D8',
+  // Linije/okviri — suptilno beli, rade na bilo kojoj jarkoj pozadini
+  border: 'rgba(255,255,255,0.28)',
 
-  // Statusi termina — nezavisno od brend palete, radi jasnoće
-  statusZakazano: '#F5B301', // žuto
-  statusZakazanoBg: '#FFF3D6',
-  statusPotvrdjeno: '#22B573', // zeleno
-  statusPotvrdjenoBg: '#DEF7EC',
-  statusOtkazano: '#E74C3C', // crveno
-  statusOtkazanoBg: '#FDE8E6',
+  // Statusi termina — pune, jarke boje sa belim tekstom
+  statusZakazano: '#F5A623', // žuto/ćilibar
+  statusPotvrdjeno: '#1FAE6B', // zeleno
+  statusOtkazano: '#E5484D', // crveno
 
-  // Slotovi u klijentskom kalendaru (bez imena)
-  slotSlobodan: '#DFF6EF',
-  slotSlobodanBorder: '#00BFB3',
-  slotZauzet: '#EDE7E2',
-  slotZauzetText: '#B3A99D',
+  // Slotovi u klijentskom kalendaru (bez imena) — i slobodno i zauzeto ostaju jarki
+  slotSlobodan: '#12B886', // živa zelena/tirkizna
+  slotSlobodanBorder: '#0CA678',
+  slotZauzet: '#5C5470', // prigušena ljubičasta — jarka, ali vizuelno "van upotrebe"
 
-  danger: '#E74C3C',
-  success: '#22B573',
-  warning: '#F5B301',
+  danger: '#E5484D',
+  success: '#1FAE6B',
+  warning: '#F5A623',
 } as const;
 
 export type AppColors = typeof colors;

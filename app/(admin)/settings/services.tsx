@@ -10,7 +10,7 @@ import {
   updateServicePrice,
   deleteService,
   seedDefaultServicesIfEmpty,
-} from '../../../src/firebase/services';
+} from '../../../src/api/services';
 import type { ServiceType } from '../../../src/types';
 
 export default function ServicesSettingsScreen() {
