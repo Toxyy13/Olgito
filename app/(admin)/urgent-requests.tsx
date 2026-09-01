@@ -4,10 +4,12 @@ import { ScreenContainer } from '../../src/components/ScreenContainer';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { Button } from '../../src/components/Button';
 import { colors, radius, spacing, typography } from '../../src/theme';
+import { useAppAlert } from '../../src/context/AlertContext';
 import { watchOpenUrgentRequests, resolveUrgentRequest } from '../../src/api/urgentRequests';
 import type { UrgentRequest } from '../../src/types';
 
 export default function UrgentRequestsScreen() {
+  const { alert } = useAppAlert();
   const [requests, setRequests] = useState<UrgentRequest[]>([]);
 
   useEffect(() => watchOpenUrgentRequests(setRequests), []);
@@ -28,7 +30,11 @@ export default function UrgentRequestsScreen() {
             <Text style={styles.name}>{item.clientName}</Text>
             <Text style={styles.phone}>{item.clientPhone}</Text>
             <Text style={styles.note}>{item.note}</Text>
-            <Button title="Označi kao rešeno" variant="secondary" onPress={() => resolveUrgentRequest(item.id)} />
+            <Button
+              title="Označi kao rešeno"
+              variant="secondary"
+              onPress={() => resolveUrgentRequest(item.id).catch(() => alert('Greška', 'Zahtev nije označen. Pokušaj ponovo.'))}
+            />
           </View>
         )}
       />

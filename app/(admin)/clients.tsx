@@ -5,11 +5,13 @@ import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { StatusBadge } from '../../src/components/StatusBadge';
 import { Button } from '../../src/components/Button';
 import { colors, radius, spacing, typography } from '../../src/theme';
+import { useAppAlert } from '../../src/context/AlertContext';
 import { watchAllClients, blockClient, unblockClient } from '../../src/api/users';
 import { getClientAppointmentHistory } from '../../src/api/appointments';
 import type { AppUser, Appointment } from '../../src/types';
 
 export default function ClientsScreen() {
+  const { alert } = useAppAlert();
   const [clients, setClients] = useState<AppUser[]>([]);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<AppUser | null>(null);
@@ -23,12 +25,14 @@ export default function ClientsScreen() {
     setLoadingHistory(true);
     getClientAppointmentHistory(selected.uid)
       .then(setHistory)
+      .catch(() => alert('Greška', 'Istorija termina nije učitana.'))
       .finally(() => setLoadingHistory(false));
   }, [selected?.uid]);
 
   const filtered = clients
-    .filter((c) => c.accountStatus !== 'pending')
-    .filter((c) => c.fullName.toLowerCase().includes(search.toLowerCase()) || c.phone.includes(search));
+    .filter((c) => c.accountStatus === 'approved' || c.accountStatus === 'blocked')
+    .filter((c) => c.fullName.toLowerCase().includes(search.toLowerCase()) || c.phone.includes(search))
+    .sort((a, b) => a.fullName.localeCompare(b.fullName, 'sr'));
 
   return (
     <ScreenContainer>
@@ -107,9 +111,17 @@ export default function ClientsScreen() {
 
                 <View style={{ marginTop: spacing.md, gap: spacing.sm }}>
                   {selected.accountStatus === 'blocked' ? (
-                    <Button title="Odblokiraj" variant="secondary" onPress={() => unblockClient(selected.uid)} />
+                    <Button
+                      title="Odblokiraj"
+                      variant="secondary"
+                      onPress={() => unblockClient(selected.uid).catch(() => alert('Greška', 'Klijent nije odblokiran. Pokušaj ponovo.'))}
+                    />
                   ) : (
-                    <Button title="Blokiraj" variant="danger" onPress={() => blockClient(selected.uid)} />
+                    <Button
+                      title="Blokiraj"
+                      variant="danger"
+                      onPress={() => blockClient(selected.uid).catch(() => alert('Greška', 'Klijent nije blokiran. Pokušaj ponovo.'))}
+                    />
                   )}
                   <Button title="Zatvori" variant="outline" onPress={() => setSelected(null)} />
                 </View>

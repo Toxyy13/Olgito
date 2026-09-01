@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Pressable, Modal, TextInput, Alert, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Pressable, Modal, TextInput, ScrollView } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { StatusBadge } from '../../src/components/StatusBadge';
 import { Button } from '../../src/components/Button';
 import { colors, radius, spacing, typography, calendarTheme } from '../../src/theme';
+import { useAppAlert } from '../../src/context/AlertContext';
 import { watchAppointmentsForDate, cancelAppointment } from '../../src/api/appointments';
 import { createRescheduleRequest } from '../../src/api/rescheduleRequests';
 import { watchAllServices } from '../../src/api/services';
@@ -27,6 +28,7 @@ if (!LocaleConfig.locales['sr']) {
 const TODAY = todayISO();
 
 export default function AdminCalendarScreen() {
+  const { alert } = useAppAlert();
   const [selectedDate, setSelectedDate] = useState(TODAY);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [todayAppointments, setTodayAppointments] = useState<Appointment[]>([]);
@@ -49,7 +51,7 @@ export default function AdminCalendarScreen() {
   const activeToday = todayAppointments.filter((a) => a.status !== 'otkazano');
 
   const handleCancel = (item: Appointment) => {
-    Alert.alert('Otkazivanje termina', `Otkazati termin za ${item.clientName}?`, [
+    alert('Otkazivanje termina', `Otkazati termin za ${item.clientName}?`, [
       { text: 'Ne', style: 'cancel' },
       {
         text: 'Da, otkaži',
@@ -68,7 +70,7 @@ export default function AdminCalendarScreen() {
     setShowReschedule(false);
     setRescheduleMsg('');
     setDetail(null);
-    Alert.alert('Poslato', 'Klijent je obavešten da pomeri termin.');
+    alert('Poslato', 'Klijent je obavešten da pomeri termin.');
   };
 
   // Sve iznad liste termina (header, "Danas" traka, kalendar, ukupan iznos)

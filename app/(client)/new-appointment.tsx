@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { useRouter } from 'expo-router';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
@@ -7,6 +7,7 @@ import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { Button } from '../../src/components/Button';
 import { colors, radius, spacing, typography, calendarTheme } from '../../src/theme';
 import { useAuth } from '../../src/context/AuthContext';
+import { useAppAlert } from '../../src/context/AlertContext';
 import { watchActiveServices } from '../../src/api/services';
 import { getEffectiveDayHours } from '../../src/api/workingHours';
 import { getBusyRangesOnce } from '../../src/api/availability';
@@ -17,6 +18,7 @@ import { todayISO } from '../../src/utils/time';
 
 export default function NewAppointmentScreen() {
   const { appUser } = useAuth();
+  const { alert } = useAppAlert();
   const router = useRouter();
   const [services, setServices] = useState<ServiceType[]>([]);
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
@@ -34,16 +36,20 @@ export default function NewAppointmentScreen() {
     let cancelled = false;
     setSelectedStart(null);
     (async () => {
-      const hours = await getEffectiveDayHours(selectedDate);
-      if (cancelled) return;
-      setDayHours(hours);
-      if (hours.closed) {
-        setAvailableStarts([]);
-        return;
+      try {
+        const hours = await getEffectiveDayHours(selectedDate);
+        if (cancelled) return;
+        setDayHours(hours);
+        if (hours.closed) {
+          setAvailableStarts([]);
+          return;
+        }
+        const busy = await getBusyRangesOnce(selectedDate);
+        if (cancelled) return;
+        setAvailableStarts(computeAvailableStartTimes(hours.start, hours.end, busy, peopleCount));
+      } catch {
+        if (!cancelled) alert('Greška', 'Nije moguće učitati slobodne termine. Pokušaj ponovo.');
       }
-      const busy = await getBusyRangesOnce(selectedDate);
-      if (cancelled) return;
-      setAvailableStarts(computeAvailableStartTimes(hours.start, hours.end, busy, peopleCount));
     })();
     return () => {
       cancelled = true;
@@ -72,16 +78,16 @@ export default function NewAppointmentScreen() {
         startTime: selectedStart,
         note,
       });
-      Alert.alert('Uspešno zakazano', `Termin je zakazan za ${selectedDate} u ${selectedStart}.`);
+      alert('Uspešno zakazano', `Termin je zakazan za ${selectedDate} u ${selectedStart}.`);
       setSelectedServiceIds([]);
       setNote('');
       setSelectedStart(null);
       router.push('/(client)/my-appointments');
     } catch (e: any) {
       if (e?.message === 'SLOT_TAKEN') {
-        Alert.alert('Termin zauzet', 'Neko je upravo zauzeo ovaj termin. Izaberi drugi.');
+        alert('Termin zauzet', 'Neko je upravo zauzeo ovaj termin. Izaberi drugi.');
       } else {
-        Alert.alert('Greška', 'Nešto nije u redu. Pokušaj ponovo.');
+        alert('Greška', 'Nešto nije u redu. Pokušaj ponovo.');
       }
     } finally {
       setLoading(false);

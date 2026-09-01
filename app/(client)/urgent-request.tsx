@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, StyleSheet } from 'react-native';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { Button } from '../../src/components/Button';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { useAuth } from '../../src/context/AuthContext';
+import { useAppAlert } from '../../src/context/AlertContext';
 import { createUrgentRequest } from '../../src/api/urgentRequests';
 
 export default function UrgentRequestScreen() {
   const { appUser } = useAuth();
+  const { alert } = useAppAlert();
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
     if (!appUser || note.trim().length < 5) {
-      Alert.alert('Nedostaje opis', 'Napiši kratko kada bi ti termin bio potreban.');
+      alert('Nedostaje opis', 'Napiši kratko kada bi ti termin bio potreban.');
       return;
     }
     setLoading(true);
@@ -26,9 +28,9 @@ export default function UrgentRequestScreen() {
         note: note.trim(),
       });
       setNote('');
-      Alert.alert('Zahtev poslat', 'Olgica je obaveštena i javiće ti se čim bude mogla da ti pronađe termin.');
+      alert('Zahtev poslat', 'Olgica je obaveštena i javiće ti se čim bude mogla da ti pronađe termin.');
     } catch {
-      Alert.alert('Greška', 'Nešto nije u redu. Pokušaj ponovo.');
+      alert('Greška', 'Nešto nije u redu. Pokušaj ponovo.');
     } finally {
       setLoading(false);
     }

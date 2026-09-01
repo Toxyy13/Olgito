@@ -5,6 +5,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
+import { AlertProvider } from '../src/context/AlertContext';
 import { colors } from '../src/theme';
 
 export default function RootLayout() {
@@ -12,9 +13,11 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <AuthProvider>
-          <StatusBar style="light" />
-          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }} />
-          <AuthGate />
+          <AlertProvider>
+            <StatusBar style="light" />
+            <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }} />
+            <AuthGate />
+          </AlertProvider>
         </AuthProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
@@ -44,7 +47,7 @@ function AuthGate() {
     return null;
   }
 
-  if (appUser.accountStatus === 'blocked') {
+  if (appUser.accountStatus === 'blocked' || appUser.accountStatus === 'rejected') {
     if (sub !== 'blocked') return <Redirect href="/(auth)/blocked" />;
     return null;
   }

@@ -1,6 +1,6 @@
 export type Role = 'admin' | 'client';
 
-export type AccountStatus = 'pending' | 'approved' | 'blocked';
+export type AccountStatus = 'pending' | 'approved' | 'blocked' | 'rejected';
 
 export interface AppUser {
   uid: string;

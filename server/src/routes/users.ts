@@ -45,13 +45,22 @@ usersRouter.get('/clients', requireAdmin, (_req, res) => {
   res.json({ users: rows.map(toPublicUser) });
 });
 
+usersRouter.get('/rejected', requireAdmin, (_req, res) => {
+  const rows = db
+    .prepare("SELECT * FROM users WHERE role = 'client' AND accountStatus = 'rejected'")
+    .all() as UserRow[];
+  res.json({ users: rows.map(toPublicUser) });
+});
+
 usersRouter.post('/:id/approve', requireAdmin, (req, res) => {
   db.prepare("UPDATE users SET accountStatus = 'approved' WHERE id = ?").run(req.params.id);
   res.json({ ok: true });
 });
 
+// Ne briše nalog — samo ga označava kao odbijen, tako da Olgica kasnije
+// može da ga vidi u "Odbijeni klijenti" i eventualno se predomisli.
 usersRouter.post('/:id/reject', requireAdmin, (req, res) => {
-  db.prepare('DELETE FROM users WHERE id = ?').run(req.params.id);
+  db.prepare("UPDATE users SET accountStatus = 'rejected' WHERE id = ?").run(req.params.id);
   res.json({ ok: true });
 });
 

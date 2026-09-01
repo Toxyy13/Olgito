@@ -24,6 +24,10 @@ export function watchAllClients(cb: (users: AppUser[]) => void) {
   return poll(() => apiFetch<{ users: AppUser[] }>('/users/clients').then((r) => r.users), cb);
 }
 
+export function watchRejectedClients(cb: (users: AppUser[]) => void) {
+  return poll(() => apiFetch<{ users: AppUser[] }>('/users/rejected').then((r) => r.users), cb);
+}
+
 export async function approveClient(uid: string): Promise<void> {
   await apiFetch(`/users/${uid}/approve`, { method: 'POST' });
 }

@@ -4,13 +4,18 @@ import { ScreenContainer } from '../../src/components/ScreenContainer';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { Button } from '../../src/components/Button';
 import { colors, radius, spacing, typography } from '../../src/theme';
+import { useAppAlert } from '../../src/context/AlertContext';
 import { watchPendingClients, approveClient, rejectClient } from '../../src/api/users';
 import type { AppUser } from '../../src/types';
 
 export default function NewClientsScreen() {
+  const { alert } = useAppAlert();
   const [pending, setPending] = useState<AppUser[]>([]);
 
   useEffect(() => watchPendingClients(setPending), []);
+
+  const handleApprove = (uid: string) => approveClient(uid).catch(() => alert('Greška', 'Nalog nije odobren. Pokušaj ponovo.'));
+  const handleReject = (uid: string) => rejectClient(uid).catch(() => alert('Greška', 'Nalog nije odbijen. Pokušaj ponovo.'));
 
   return (
     <ScreenContainer>
@@ -38,8 +43,8 @@ export default function NewClientsScreen() {
               </View>
             </View>
             <View style={styles.actions}>
-              <Button title="Odobri" onPress={() => approveClient(item.uid)} />
-              <Button title="Odbij" variant="outline" onPress={() => rejectClient(item.uid)} />
+              <Button title="Odobri" onPress={() => handleApprove(item.uid)} />
+              <Button title="Odbij" variant="outline" onPress={() => handleReject(item.uid)} />
             </View>
           </View>
         )}

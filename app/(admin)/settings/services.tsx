@@ -4,6 +4,7 @@ import { ScreenContainer } from '../../../src/components/ScreenContainer';
 import { ScreenHeader } from '../../../src/components/ScreenHeader';
 import { Button } from '../../../src/components/Button';
 import { colors, radius, spacing, typography } from '../../../src/theme';
+import { useAppAlert } from '../../../src/context/AlertContext';
 import {
   watchAllServices,
   addService,
@@ -15,6 +16,7 @@ import {
 import type { ServiceType } from '../../../src/types';
 
 export default function ServicesSettingsScreen() {
+  const { alert } = useAppAlert();
   const [services, setServices] = useState<ServiceType[]>([]);
   const [newName, setNewName] = useState('');
   const [newPrice, setNewPrice] = useState('');
@@ -27,23 +29,42 @@ export default function ServicesSettingsScreen() {
 
   const handleAdd = async () => {
     const price = parseInt(newPrice, 10);
-    if (newName.trim().length < 2 || !price) return;
-    await addService(newName.trim(), price);
-    setNewName('');
-    setNewPrice('');
+    if (newName.trim().length < 2 || !price) {
+      alert('Nedostaju podaci', 'Unesi naziv usluge i ispravnu cenu.');
+      return;
+    }
+    try {
+      await addService(newName.trim(), price);
+      setNewName('');
+      setNewPrice('');
+    } catch {
+      alert('Greška', 'Usluga nije dodata. Pokušaj ponovo.');
+    }
   };
 
   const handleSavePrice = async (id: string) => {
     const draft = priceDrafts[id];
     const price = parseInt(draft, 10);
-    if (!price) return;
-    await updateServicePrice(id, price);
-    setPriceDrafts((prev) => {
-      const next = { ...prev };
-      delete next[id];
-      return next;
-    });
+    if (!price) {
+      alert('Neispravna cena', 'Unesi ispravnu cenu.');
+      return;
+    }
+    try {
+      await updateServicePrice(id, price);
+      setPriceDrafts((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+    } catch {
+      alert('Greška', 'Cena nije sačuvana. Pokušaj ponovo.');
+    }
   };
+
+  const handleToggleActive = (id: string, val: boolean) =>
+    updateService(id, { active: val }).catch(() => alert('Greška', 'Izmena nije sačuvana. Pokušaj ponovo.'));
+
+  const handleDelete = (id: string) => deleteService(id).catch(() => alert('Greška', 'Usluga nije obrisana. Pokušaj ponovo.'));
 
   return (
     <ScreenContainer>
@@ -60,7 +81,7 @@ export default function ServicesSettingsScreen() {
               <Text style={[styles.name, !item.active && styles.inactive]}>{item.name}</Text>
               <Switch
                 value={item.active}
-                onValueChange={(val) => updateService(item.id, { active: val })}
+                onValueChange={(val) => handleToggleActive(item.id, val)}
                 trackColor={{ true: colors.secondary, false: colors.border }}
               />
             </View>
@@ -74,7 +95,7 @@ export default function ServicesSettingsScreen() {
               <Text style={styles.rsd}>RSD</Text>
               <Button title="Sačuvaj" variant="secondary" onPress={() => handleSavePrice(item.id)} />
             </View>
-            <Button title="Obriši uslugu" variant="outline" onPress={() => deleteService(item.id)} />
+            <Button title="Obriši uslugu" variant="outline" onPress={() => handleDelete(item.id)} />
           </View>
         )}
       />

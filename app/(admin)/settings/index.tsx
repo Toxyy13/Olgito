@@ -34,6 +34,12 @@ export default function SettingsIndexScreen() {
           subtitle="Ukupna zarada po danu, nedelji i mesecu"
           onPress={() => router.push('/(admin)/settings/earnings')}
         />
+        <MenuItem
+          icon="close-circle"
+          label="Odbijeni klijenti"
+          subtitle="Nalozi koje si odbila"
+          onPress={() => router.push('/(admin)/settings/rejected-clients')}
+        />
       </View>
 
       <Pressable style={styles.logout} onPress={logout}>

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Switch, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Switch, ScrollView } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { ScreenContainer } from '../../../src/components/ScreenContainer';
 import { ScreenHeader } from '../../../src/components/ScreenHeader';
 import { Button } from '../../../src/components/Button';
+import { useAppAlert } from '../../../src/context/AlertContext';
 import { colors, radius, spacing, typography, calendarTheme } from '../../../src/theme';
 import {
   watchWeeklyDefault,
@@ -29,6 +30,7 @@ const WEEKDAYS: { key: Weekday; label: string }[] = [
 ];
 
 export default function WorkingHoursScreen() {
+  const { alert } = useAppAlert();
   const [weekly, setWeekly] = useState<WeeklyDefaultHours | null>(null);
   const [selectedDate, setSelectedDate] = useState(todayISO());
   const [overrideClosed, setOverrideClosed] = useState<boolean | null>(null);
@@ -53,35 +55,56 @@ export default function WorkingHoursScreen() {
     getBlockedSlotsForDate(selectedDate).then(setBlocked);
   }, [selectedDate]);
 
-  const updateWeekday = (key: Weekday, patch: Partial<{ closed: boolean; start: string; end: string }>) => {
+  const updateWeekday = async (key: Weekday, patch: Partial<{ closed: boolean; start: string; end: string }>) => {
     if (!weekly) return;
     const next = { ...weekly[key], ...patch };
     setWeekly({ ...weekly, [key]: next });
-    setDayHours(key, next);
+    try {
+      await setDayHours(key, next);
+    } catch {
+      setWeekly(weekly);
+      alert('Greška', 'Radno vreme nije sačuvano. Pokušaj ponovo.');
+    }
   };
 
   const handleSaveOverride = async (closed: boolean) => {
-    await setOverride({ date: selectedDate, closed, start: overrideStart, end: overrideEnd });
-    setOverrideClosed(closed);
+    try {
+      await setOverride({ date: selectedDate, closed, start: overrideStart, end: overrideEnd });
+      setOverrideClosed(closed);
+    } catch {
+      alert('Greška', 'Izuzetak nije sačuvan. Pokušaj ponovo.');
+    }
   };
 
   const handleClearOverride = async () => {
-    await clearOverride(selectedDate);
-    setOverrideClosed(null);
+    try {
+      await clearOverride(selectedDate);
+      setOverrideClosed(null);
+    } catch {
+      alert('Greška', 'Izuzetak nije uklonjen. Pokušaj ponovo.');
+    }
   };
 
   const handleAddBlock = async () => {
     if (blockStart >= blockEnd) {
-      Alert.alert('Neispravno vreme', 'Početak pauze mora biti pre kraja.');
+      alert('Neispravno vreme', 'Početak pauze mora biti pre kraja.');
       return;
     }
-    await addBlockedSlot({ date: selectedDate, startTime: blockStart, endTime: blockEnd });
-    setBlocked(await getBlockedSlotsForDate(selectedDate));
+    try {
+      await addBlockedSlot({ date: selectedDate, startTime: blockStart, endTime: blockEnd });
+      setBlocked(await getBlockedSlotsForDate(selectedDate));
+    } catch {
+      alert('Greška', 'Pauza nije dodata. Pokušaj ponovo.');
+    }
   };
 
   const handleRemoveBlock = async (id: string) => {
-    await removeBlockedSlot(id);
-    setBlocked(await getBlockedSlotsForDate(selectedDate));
+    try {
+      await removeBlockedSlot(id);
+      setBlocked(await getBlockedSlotsForDate(selectedDate));
+    } catch {
+      alert('Greška', 'Pauza nije uklonjena. Pokušaj ponovo.');
+    }
   };
 
   return (

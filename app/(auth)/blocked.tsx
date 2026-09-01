@@ -6,14 +6,18 @@ import { ScreenContainer } from '../../src/components/ScreenContainer';
 import { colors, spacing, typography } from '../../src/theme';
 
 export default function BlockedScreen() {
-  const { logout } = useAuth();
+  const { logout, appUser } = useAuth();
+  const isRejected = appUser?.accountStatus === 'rejected';
+
   return (
     <ScreenContainer scroll>
       <View style={styles.center}>
         <Text style={styles.emoji}>🚫</Text>
-        <Text style={styles.title}>Nalog je blokiran</Text>
+        <Text style={styles.title}>{isRejected ? 'Zahtev za nalog nije odobren' : 'Nalog je blokiran'}</Text>
         <Text style={styles.subtitle}>
-          Korišćenje aplikacije ti je trenutno onemogućeno. Ako misliš da je ovo greška, kontaktiraj Olgicu direktno.
+          {isRejected
+            ? 'Olgica nije odobrila tvoj zahtev za nalog. Ako misliš da je ovo greška, kontaktiraj je direktno.'
+            : 'Korišćenje aplikacije ti je trenutno onemogućeno. Ako misliš da je ovo greška, kontaktiraj Olgicu direktno.'}
         </Text>
         <Button title="Odjavi se" variant="outline" onPress={logout} />
       </View>
