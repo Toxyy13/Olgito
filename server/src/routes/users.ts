@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { db } from '../db';
 import { requireAuth, requireAdmin } from '../auth/middleware';
 import { toPublicUser, type UserRow } from '../types';
+import { sendExpoPush, getUserToken } from '../push';
 
 export const usersRouter = Router();
 usersRouter.use(requireAuth);
@@ -54,6 +55,12 @@ usersRouter.get('/rejected', requireAdmin, (_req, res) => {
 
 usersRouter.post('/:id/approve', requireAdmin, (req, res) => {
   db.prepare("UPDATE users SET accountStatus = 'approved' WHERE id = ?").run(req.params.id);
+  sendExpoPush(
+    getUserToken(db, req.params.id),
+    'Nalog odobren! 🎉',
+    'Sada možeš da zakazuješ termine u Olgito aplikaciji.',
+    { type: 'account_approved' }
+  );
   res.json({ ok: true });
 });
 

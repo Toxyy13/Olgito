@@ -44,6 +44,7 @@ export interface Appointment {
   status: AppointmentStatus;
   note?: string;
   reminderSentAt?: number | null;
+  rebookPromptedAt?: number | null;
   createdAt: number;
   cancelledBy?: Role | null;
 }
@@ -82,8 +83,36 @@ export interface UrgentRequest {
   clientId: string;
   clientName: string;
   clientPhone: string;
+  clientPhotoURL?: string | null;
   note: string;
   status: UrgentRequestStatus;
+  createdAt: number;
+}
+
+export interface ChatConversation {
+  clientId: string;
+  clientName: string;
+  clientPhotoURL?: string | null;
+  lastText: string;
+  lastSenderRole: 'admin' | 'client';
+  lastAt: number;
+}
+
+export interface ChatMessage {
+  id: string;
+  clientId: string;
+  senderId: string;
+  senderRole: 'admin' | 'client';
+  text: string;
+  createdAt: number;
+}
+
+export interface UrgentRequestMessage {
+  id: string;
+  requestId: string;
+  senderId: string;
+  senderRole: 'admin' | 'client';
+  text: string;
   createdAt: number;
 }
 

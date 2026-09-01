@@ -1,11 +1,12 @@
 import React from 'react';
 import { Stack, Redirect, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { AlertProvider } from '../src/context/AlertContext';
+import { WaitingScreen } from '../src/components/WaitingScreen';
 import { colors } from '../src/theme';
 
 export default function RootLayout() {
@@ -33,8 +34,8 @@ function AuthGate() {
 
   if (initializing) {
     return (
-      <View style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }}>
-        <ActivityIndicator size="large" color={colors.primary} />
+      <View style={{ position: 'absolute', inset: 0 }}>
+        <WaitingScreen />
       </View>
     );
   }

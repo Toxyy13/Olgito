@@ -9,9 +9,19 @@
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://192.168.1.8:4000"
+      }
     },
-    "production": {}
+    "production": {
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://TVOJ-SERVER-DOMEN-ILI-IP:4000"
+      }
+    }
   },
   "submit": {
     "production": {}

@@ -48,7 +48,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [initializing, !!appUser]);
 
   useEffect(() => {
-    if (!appUser || appUser.accountStatus !== 'approved') return;
+    // Registrujemo token i za naloge koji čekaju odobrenje, ne samo odobrene —
+    // inače nemamo gde da pošaljemo push kad Olgica odobri nalog.
+    if (!appUser) return;
     registerForPushNotificationsAsync().then((token) => {
       if (token && token !== appUser.expoPushToken) {
         savePushToken(appUser.uid, token);

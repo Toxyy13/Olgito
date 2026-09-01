@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
 import { Button } from '../../src/components/Button';
+import { ClientChat } from '../../src/components/ClientChat';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { useAuth } from '../../src/context/AuthContext';
 
 export default function ProfileScreen() {
   const { appUser, logout } = useAuth();
+  const [chatOpen, setChatOpen] = useState(false);
   if (!appUser) return null;
 
   return (
@@ -28,7 +30,11 @@ export default function ProfileScreen() {
         <Row label="Status naloga" value={appUser.accountStatus === 'approved' ? 'Odobren' : appUser.accountStatus} />
       </View>
 
+      <Button title="Poruke od Olgice" onPress={() => setChatOpen(true)} />
+      <View style={{ height: spacing.sm }} />
       <Button title="Odjavi se" variant="outline" onPress={logout} />
+
+      <ClientChat clientId={chatOpen ? appUser.uid : null} title="Poruke sa Olgicom" onClose={() => setChatOpen(false)} />
     </ScreenContainer>
   );
 }

@@ -78,6 +78,11 @@ appointmentsRouter.post('/', requireApprovedClient, async (req, res) => {
     return res.status(400).json({ error: 'Nedostaje datum ili vreme.' });
   }
 
+  const [y, mo, d] = date.split('-').map(Number);
+  const [h, min] = startTime.split(':').map(Number);
+  const startAtMillis = new Date(y, mo - 1, d, h, min).getTime();
+  if (startAtMillis < Date.now()) return res.status(400).json({ error: 'Ne možeš zakazati termin u prošlosti.' });
+
   const endTime = addMinutesToTime(startTime, people * 30);
 
   const run = db.transaction(() => {
@@ -88,9 +93,6 @@ appointmentsRouter.post('/', requireApprovedClient, async (req, res) => {
     if (overlap) throw new Error('SLOT_TAKEN');
 
     const id = randomUUID();
-    const [y, m, d] = date.split('-').map(Number);
-    const [h, min] = startTime.split(':').map(Number);
-    const startAtMillis = new Date(y, m - 1, d, h, min).getTime();
 
     db.prepare(
       `INSERT INTO appointments
@@ -143,6 +145,7 @@ appointmentsRouter.post('/:id/cancel', (req, res) => {
   if (!appt) return res.status(404).json({ error: 'Termin ne postoji.' });
   const isOwner = appt.clientId === req.user!.id;
   if (!isOwner && req.user!.role !== 'admin') return res.status(403).json({ error: 'Nemaš pristup.' });
+  if (appt.startAtMillis < Date.now()) return res.status(400).json({ error: 'Termin je već prošao.' });
 
   const cancelledBy = req.user!.role === 'admin' ? 'admin' : 'client';
   db.prepare("UPDATE appointments SET status = 'otkazano', cancelledBy = ? WHERE id = ?").run(cancelledBy, req.params.id);
@@ -164,11 +167,25 @@ appointmentsRouter.post('/:id/confirm', (req, res) => {
   const appt = db.prepare('SELECT * FROM appointments WHERE id = ?').get(req.params.id) as AppointmentRow | undefined;
   if (!appt) return res.status(404).json({ error: 'Termin ne postoji.' });
   if (appt.clientId !== req.user!.id && req.user!.role !== 'admin') return res.status(403).json({ error: 'Nemaš pristup.' });
+  if (appt.startAtMillis < Date.now()) return res.status(400).json({ error: 'Termin je već prošao.' });
 
   db.prepare("UPDATE appointments SET status = 'potvrdjeno' WHERE id = ?").run(req.params.id);
   sendExpoPush(getAdminTokens(db), 'Termin potvrđen', `${appt.clientName} je potvrdio/la dolazak ${appt.date} u ${appt.startTime}.`, {
     type: 'appointment_confirmed',
   });
 
+  res.json({ ok: true });
+});
+
+// Klijent je video/odgovorio na ponudu za zakazivanje sledećeg termina (bilo
+// izborom nedelje, bilo "Ne sada") — ne pitamo ga ponovo za ovaj termin.
+appointmentsRouter.post('/:id/rebook-prompted', (req, res) => {
+  const appt = db.prepare('SELECT clientId FROM appointments WHERE id = ?').get(req.params.id) as
+    | { clientId: string }
+    | undefined;
+  if (!appt) return res.status(404).json({ error: 'Termin ne postoji.' });
+  if (appt.clientId !== req.user!.id) return res.status(403).json({ error: 'Nemaš pristup.' });
+
+  db.prepare('UPDATE appointments SET rebookPromptedAt = ? WHERE id = ?').run(Date.now(), req.params.id);
   res.json({ ok: true });
 });

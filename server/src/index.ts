@@ -12,6 +12,7 @@ import { workingHoursRouter } from './routes/workingHours';
 import { appointmentsRouter } from './routes/appointments';
 import { urgentRequestsRouter } from './routes/urgentRequests';
 import { rescheduleRequestsRouter } from './routes/rescheduleRequests';
+import { messagesRouter } from './routes/messages';
 import { uploadsRouter } from './routes/uploads';
 import { startReminderJob } from './reminders';
 
@@ -55,6 +56,7 @@ async function main() {
   app.use('/appointments', appointmentsRouter);
   app.use('/urgent-requests', urgentRequestsRouter);
   app.use('/reschedule-requests', rescheduleRequestsRouter);
+  app.use('/messages', messagesRouter);
   app.use('/api/uploads', uploadsRouter);
 
   startReminderJob();

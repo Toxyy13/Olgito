@@ -42,7 +42,9 @@
           "color": "#FF6F59"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-video",
+      "expo-audio"
     ]
   }
 }

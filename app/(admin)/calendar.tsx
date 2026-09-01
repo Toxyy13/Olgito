@@ -51,26 +51,38 @@ export default function AdminCalendarScreen() {
   const activeToday = todayAppointments.filter((a) => a.status !== 'otkazano');
 
   const handleCancel = (item: Appointment) => {
-    alert('Otkazivanje termina', `Otkazati termin za ${item.clientName}?`, [
-      { text: 'Ne', style: 'cancel' },
-      {
-        text: 'Da, otkaži',
-        style: 'destructive',
-        onPress: async () => {
-          await cancelAppointment(item, 'admin');
-          setDetail(null);
+    // Prvo zatvori prozor sa detaljima — dva istovremeno otvorena modalna
+    // prozora (detalji + potvrda) lome klikove jedan preko drugog.
+    setDetail(null);
+    setTimeout(() => {
+      alert('Otkazivanje termina', `Otkazati termin za ${item.clientName}?`, [
+        { text: 'Ne', style: 'cancel' },
+        {
+          text: 'Da, otkaži',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await cancelAppointment(item, 'admin');
+            } catch {
+              alert('Greška', 'Termin nije otkazan. Pokušaj ponovo.');
+            }
+          },
         },
-      },
-    ]);
+      ]);
+    }, 300);
   };
 
   const handleSendReschedule = async () => {
     if (!detail || rescheduleMsg.trim().length < 3) return;
-    await createRescheduleRequest({ appointmentId: detail.id, clientId: detail.clientId, message: rescheduleMsg.trim() });
-    setShowReschedule(false);
-    setRescheduleMsg('');
-    setDetail(null);
-    alert('Poslato', 'Klijent je obavešten da pomeri termin.');
+    try {
+      await createRescheduleRequest({ appointmentId: detail.id, clientId: detail.clientId, message: rescheduleMsg.trim() });
+      setShowReschedule(false);
+      setRescheduleMsg('');
+      setDetail(null);
+      alert('Poslato', 'Klijent je obavešten da pomeri termin.');
+    } catch {
+      alert('Greška', 'Zahtev nije poslat. Pokušaj ponovo.');
+    }
   };
 
   // Sve iznad liste termina (header, "Danas" traka, kalendar, ukupan iznos)
@@ -172,12 +184,15 @@ export default function AdminCalendarScreen() {
                     <Button title="Pošalji zahtev za pomeranje" onPress={handleSendReschedule} />
                   </View>
                 ) : (
-                  detail.status !== 'otkazano' && (
+                  detail.status !== 'otkazano' &&
+                  (detail.startAtMillis > Date.now() ? (
                     <View style={{ gap: spacing.sm, marginTop: spacing.md }}>
                       <Button title="Zatraži pomeranje termina" variant="secondary" onPress={() => setShowReschedule(true)} />
                       <Button title="Otkaži termin" variant="danger" onPress={() => handleCancel(detail)} />
                     </View>
-                  )
+                  ) : (
+                    <Text style={styles.modalNote}>Termin je prošao — nema više dostupnih akcija.</Text>
+                  ))
                 )}
 
                 <Button

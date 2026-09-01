@@ -4,6 +4,7 @@ import { ScreenContainer } from '../../src/components/ScreenContainer';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { StatusBadge } from '../../src/components/StatusBadge';
 import { Button } from '../../src/components/Button';
+import { ClientChat } from '../../src/components/ClientChat';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { useAppAlert } from '../../src/context/AlertContext';
 import { watchAllClients, blockClient, unblockClient } from '../../src/api/users';
@@ -17,6 +18,7 @@ export default function ClientsScreen() {
   const [selected, setSelected] = useState<AppUser | null>(null);
   const [history, setHistory] = useState<Appointment[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [chatWith, setChatWith] = useState<AppUser | null>(null);
 
   useEffect(() => watchAllClients(setClients), []);
 
@@ -110,6 +112,7 @@ export default function ClientsScreen() {
                 )}
 
                 <View style={{ marginTop: spacing.md, gap: spacing.sm }}>
+                  <Button title="Pošalji poruku" onPress={() => setChatWith(selected)} />
                   {selected.accountStatus === 'blocked' ? (
                     <Button
                       title="Odblokiraj"
@@ -130,6 +133,12 @@ export default function ClientsScreen() {
           </View>
         </View>
       </Modal>
+
+      <ClientChat
+        clientId={chatWith?.uid ?? null}
+        title={chatWith ? `Poruke: ${chatWith.fullName}` : undefined}
+        onClose={() => setChatWith(null)}
+      />
     </ScreenContainer>
   );
 }

@@ -35,36 +35,40 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
   return (
     <AlertContext.Provider value={{ alert }}>
       {children}
-      <Modal visible={!!state} transparent animationType="fade" onRequestClose={close}>
-        <View style={styles.backdrop}>
-          <View style={styles.card}>
-            {state && (
-              <>
-                <Text style={styles.title}>{state.title}</Text>
-                {!!state.message && <Text style={styles.message}>{state.message}</Text>}
-                <View style={styles.buttons}>
-                  {state.buttons.map((b, i) => (
-                    <Pressable
-                      key={i}
-                      style={[
-                        styles.button,
-                        b.style === 'destructive' && styles.buttonDestructive,
-                        b.style === 'cancel' && styles.buttonCancel,
-                      ]}
-                      onPress={() => {
-                        close();
-                        b.onPress?.();
-                      }}
-                    >
-                      <Text style={styles.buttonText}>{b.text}</Text>
-                    </Pressable>
-                  ))}
-                </View>
-              </>
-            )}
+      {state && (
+        // Modal se montira TEK kad ima šta da prikaže (ne stalno sa visible={false})
+        // — na webu Modal pravi portal čvor u trenutku montiranja, pa bi trajno
+        // montiran Modal (iz root-a, montiran pre bilo kog drugog) uvek završio
+        // ISPOD kasnije otvorenih modala (npr. detalji termina/klijenta) po redosledu
+        // u DOM-u. Montiranjem tek na potrebu, njegov portal je uvek poslednji —
+        // dakle uvek iznad.
+        <Modal visible transparent animationType="fade" onRequestClose={close}>
+          <View style={styles.backdrop}>
+            <View style={styles.card}>
+              <Text style={styles.title}>{state.title}</Text>
+              {!!state.message && <Text style={styles.message}>{state.message}</Text>}
+              <View style={styles.buttons}>
+                {state.buttons.map((b, i) => (
+                  <Pressable
+                    key={i}
+                    style={[
+                      styles.button,
+                      b.style === 'destructive' && styles.buttonDestructive,
+                      b.style === 'cancel' && styles.buttonCancel,
+                    ]}
+                    onPress={() => {
+                      close();
+                      b.onPress?.();
+                    }}
+                  >
+                    <Text style={styles.buttonText}>{b.text}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
+      )}
     </AlertContext.Provider>
   );
 }

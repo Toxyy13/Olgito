@@ -60,7 +60,25 @@ npm run build
 npm start
 ```
 
-(preporuka: pokreni ga kroz `pm2` ili systemd servis da ostane živ posle restarta servera — javi kad budeš tu, pomažem oko toga kad budu poznati detalji tvog servera)
+### Deployment na Windows serveru
+
+Pošto je server na kom ćemo hostovati **Windows**, evo koraka:
+
+1. Instaliraj [Node.js LTS](https://nodejs.org) na serveru (isti installer kao na ovom računaru).
+2. Prekopiraj ceo `server/` folder na server (bez `node_modules` i `data` — ti se prave na serveru).
+3. Na serveru: `npm install`, pa `npm run build`.
+4. Da server ostane živ i posle restarta mašine/gašenja terminala, koristi **PM2** (radi i na Windows-u):
+   ```bash
+   npm install -g pm2 pm2-windows-startup
+   pm2-startup install
+   pm2 start dist/index.js --name olgito-server
+   pm2 save
+   ```
+   Od tad `pm2 restart olgito-server` / `pm2 logs olgito-server` za upravljanje.
+5. **HTTPS**: mobilna aplikacija (pogotovo iOS) očekuje HTTPS. Ako server već ima domen, najlakše je staviti **Caddy** ili **nginx** ispred Node servera kao reverse proxy — oba automatski izvuku besplatan HTTPS sertifikat (Let's Encrypt). Javi kad dođeš do ovog koraka i imaš domen spreman, pa podešavamo zajedno.
+6. Ne zaboravi da otvoriš port servera (podrazumevano 4000, ili port iza reverse proxy-ja) u Windows Firewall-u ako pristupaš spolja.
+
+(`better-sqlite3` i `sharp` — koristi se za smanjivanje profilnih slika pri uploadu — imaju gotove binarne fajlove za Windows, pa `npm install` na serveru ne bi trebalo da traži dodatne alate poput Pythona/Visual Studio-a — ako ipak zatraži, javi grešku pa rešavamo.)
 
 ## 2. Pokretanje mobilne aplikacije
 
@@ -87,6 +105,19 @@ eas login
 eas init
 eas build --profile development --platform android
 ```
+
+## 3. Prava instalacija na telefon (ne Expo Go, ne "web APK")
+
+Ovo pravi **pravu nativnu Android aplikaciju** (.apk fajl) koju Olgica i klijenti instaliraju direktno na telefon i koriste kao svaku drugu app — bez Expo Go, bez pretraživača, bez Play Store-a.
+
+1. U `eas.json` zameni `EXPO_PUBLIC_API_URL` (u `preview` i `production` profilima) sa pravom adresom servera (domen ili javni IP + port), jer se ta adresa "peče" u aplikaciju u trenutku build-a — mora biti tačna PRE pokretanja build-a, ne može da se promeni posle instalacije.
+2. Pokreni build (traži besplatan Expo nalog, `eas login` isto kao gore):
+   ```bash
+   eas build --profile preview --platform android
+   ```
+3. Kad se build završi (par minuta, radi se na Expo-vim serverima), dobijaš link ka `.apk` fajlu. Taj link otvoriš na telefonu (npr. pošalješ ga sebi preko Viber-a/mejla) i instaliraš — Android će tražiti dozvolu "Instaliraj iz nepoznatih izvora" jer app nije sa Play Store-a, to je očekivano i normalno za internu instalaciju.
+4. Za iOS je princip isti (`eas build --profile preview --platform ios`), ali fizička instalacija na iPhone bez App Store-a zahteva Apple Developer nalog (99$/god.) i registraciju uređaja (UDID) — javi ako ti treba i ovo, pa podešavamo zajedno.
+5. Kad budeš zadovoljna i želiš finalnu verziju (npr. za Play Store), koristi `production` profil (`eas build --profile production --platform android`) — pravi `.aab` fajl namenjen Play Store-u, ne za direktnu instalaciju.
 
 ## Poznata pojednostavljenja
 

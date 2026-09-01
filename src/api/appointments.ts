@@ -35,6 +35,10 @@ export async function confirmAppointment(appointmentId: string): Promise<void> {
   await apiFetch(`/appointments/${appointmentId}/confirm`, { method: 'POST' });
 }
 
+export async function markRebookPrompted(appointmentId: string): Promise<void> {
+  await apiFetch(`/appointments/${appointmentId}/rebook-prompted`, { method: 'POST' });
+}
+
 export function watchAppointmentsForDate(dateISO: string, cb: (appointments: Appointment[]) => void) {
   return poll(
     () => apiFetch<{ appointments: Appointment[] }>(`/appointments?date=${dateISO}`).then((r) => r.appointments),

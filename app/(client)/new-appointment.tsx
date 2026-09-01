@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
 import { Calendar } from 'react-native-calendars';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { Button } from '../../src/components/Button';
@@ -20,10 +20,13 @@ export default function NewAppointmentScreen() {
   const { appUser } = useAuth();
   const { alert } = useAppAlert();
   const router = useRouter();
+  const params = useLocalSearchParams<{ date?: string }>();
   const [services, setServices] = useState<ServiceType[]>([]);
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
   const [peopleCount, setPeopleCount] = useState(1);
-  const [selectedDate, setSelectedDate] = useState(todayISO());
+  const [selectedDate, setSelectedDate] = useState(
+    typeof params.date === 'string' && params.date >= todayISO() ? params.date : todayISO()
+  );
   const [dayHours, setDayHours] = useState<DayHours | null>(null);
   const [availableStarts, setAvailableStarts] = useState<string[]>([]);
   const [selectedStart, setSelectedStart] = useState<string | null>(null);
@@ -46,7 +49,13 @@ export default function NewAppointmentScreen() {
         }
         const busy = await getBusyRangesOnce(selectedDate);
         if (cancelled) return;
-        setAvailableStarts(computeAvailableStartTimes(hours.start, hours.end, busy, peopleCount));
+        let starts = computeAvailableStartTimes(hours.start, hours.end, busy, peopleCount);
+        if (selectedDate === todayISO()) {
+          const now = new Date();
+          const nowHHmm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+          starts = starts.filter((t) => t > nowHHmm);
+        }
+        setAvailableStarts(starts);
       } catch {
         if (!cancelled) alert('Greška', 'Nije moguće učitati slobodne termine. Pokušaj ponovo.');
       }

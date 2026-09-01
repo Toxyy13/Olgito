@@ -1,6 +1,7 @@
 import React from 'react';
-import { Pressable, Text, StyleSheet, ActivityIndicator, PressableProps } from 'react-native';
+import { Pressable, Text, StyleSheet, ActivityIndicator, PressableProps, GestureResponderEvent } from 'react-native';
 import { colors, radius, spacing, typography } from '../theme';
+import { useClickSound } from '../hooks/useClickSound';
 
 interface ButtonProps extends Omit<PressableProps, 'style'> {
   title: string;
@@ -8,7 +9,8 @@ interface ButtonProps extends Omit<PressableProps, 'style'> {
   loading?: boolean;
 }
 
-export function Button({ title, variant = 'primary', loading, disabled, ...rest }: ButtonProps) {
+export function Button({ title, variant = 'primary', loading, disabled, onPress, ...rest }: ButtonProps) {
+  const playClick = useClickSound();
   const isOutline = variant === 'outline';
   const bg =
     variant === 'primary'
@@ -19,9 +21,15 @@ export function Button({ title, variant = 'primary', loading, disabled, ...rest 
       ? colors.danger
       : 'transparent';
 
+  const handlePress = (e: GestureResponderEvent) => {
+    playClick();
+    onPress?.(e);
+  };
+
   return (
     <Pressable
       disabled={disabled || loading}
+      onPress={handlePress}
       style={({ pressed }) => [
         styles.base,
         { backgroundColor: bg, opacity: pressed ? 0.85 : disabled ? 0.5 : 1 },

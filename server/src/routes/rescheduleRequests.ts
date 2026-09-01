@@ -18,6 +18,13 @@ rescheduleRequestsRouter.post('/', requireAdmin, (req, res) => {
   const { appointmentId, clientId, message } = req.body ?? {};
   if (typeof message !== 'string' || message.trim().length < 3) return res.status(400).json({ error: 'Napiši poruku.' });
 
+  const appt = db.prepare('SELECT startAtMillis FROM appointments WHERE id = ?').get(appointmentId) as
+    | { startAtMillis: number }
+    | undefined;
+  if (appt && appt.startAtMillis < Date.now()) {
+    return res.status(400).json({ error: 'Termin je već prošao.' });
+  }
+
   const id = randomUUID();
   db.prepare(
     'INSERT INTO reschedule_requests (id, appointmentId, clientId, message, status, createdAt) VALUES (?, ?, ?, ?, ?, ?)'

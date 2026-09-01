@@ -1,14 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { StatusBadge } from '../../src/components/StatusBadge';
 import { Button } from '../../src/components/Button';
+import { RebookPrompt } from '../../src/components/RebookPrompt';
+import { ClientChat } from '../../src/components/ClientChat';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { useAuth } from '../../src/context/AuthContext';
 import { useAppAlert } from '../../src/context/AlertContext';
 import { watchAppointmentsForClient, cancelAppointment, confirmAppointment } from '../../src/api/appointments';
 import { watchRescheduleRequestsForClient, respondRescheduleRequest } from '../../src/api/rescheduleRequests';
+import { dateTimeToMillis } from '../../src/utils/time';
 import type { Appointment, RescheduleRequest } from '../../src/types';
 
 export default function MyAppointmentsScreen() {
@@ -16,11 +19,28 @@ export default function MyAppointmentsScreen() {
   const { alert } = useAppAlert();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [rescheduleRequests, setRescheduleRequests] = useState<RescheduleRequest[]>([]);
+  const [dismissedRebookIds, setDismissedRebookIds] = useState<string[]>([]);
+  const [editRequest, setEditRequest] = useState<Appointment | null>(null);
 
   useEffect(() => {
     if (!appUser) return;
     return watchAppointmentsForClient(appUser.uid, setAppointments);
   }, [appUser]);
+
+  // Termin koji je upravo završen i još nije ponuđeno zakazivanje sledećeg —
+  // uzimamo najskorije završen da ne zatrpamo klijenta sa više ponuda odjednom.
+  const rebookCandidate = useMemo(() => {
+    const now = Date.now();
+    const eligible = appointments.filter(
+      (a) =>
+        a.status !== 'otkazano' &&
+        !a.rebookPromptedAt &&
+        !dismissedRebookIds.includes(a.id) &&
+        dateTimeToMillis(a.date, a.endTime) < now
+    );
+    if (eligible.length === 0) return null;
+    return eligible.reduce((latest, a) => (a.startAtMillis > latest.startAtMillis ? a : latest));
+  }, [appointments, dismissedRebookIds]);
 
   useEffect(() => {
     if (!appUser) return;
@@ -52,18 +72,49 @@ export default function MyAppointmentsScreen() {
       .catch(() => alert('Greška', 'Odgovor nije poslat. Pokušaj ponovo.'));
   };
 
+  // Predstojeći termini idu u header (obično ih je par, ne treba im sopstveni
+  // skrol), a istorija (prošli i otkazani termini) je glavna skrolabilna lista.
+  const upcoming = appointments
+    .filter((a) => a.status !== 'otkazano' && a.startAtMillis > Date.now())
+    .sort((a, b) => a.startAtMillis - b.startAtMillis);
+  const history = appointments
+    .filter((a) => a.status === 'otkazano' || a.startAtMillis <= Date.now())
+    .sort((a, b) => b.startAtMillis - a.startAtMillis);
+
+  const renderCard = (item: Appointment) => (
+    <View style={styles.card} key={item.id}>
+      <View style={styles.cardHeader}>
+        <Text style={styles.date}>
+          {item.date} • {item.startTime}–{item.endTime}
+        </Text>
+        <StatusBadge status={item.status} />
+      </View>
+      <Text style={styles.services}>{item.serviceNames.join(', ')}</Text>
+      <Text style={styles.people}>{item.peopleCount} {item.peopleCount === 1 ? 'osoba' : 'osobe/a'}</Text>
+      {item.status !== 'otkazano' && item.startAtMillis > Date.now() && (
+        <View style={styles.actions}>
+          {item.status === 'zakazano' && (
+            <Button title="Potvrdi dolazak" variant="secondary" onPress={() => handleConfirm(item)} />
+          )}
+          <Button title="Izmeni termin" variant="secondary" onPress={() => setEditRequest(item)} />
+          <Button title="Otkaži" variant="outline" onPress={() => handleCancel(item)} />
+        </View>
+      )}
+    </View>
+  );
+
   return (
     <ScreenContainer>
       <ScreenHeader title="Moji termini" />
       <FlatList
         style={{ flex: 1 }}
-        data={appointments}
+        data={history}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', gap: spacing.md, paddingBottom: spacing.xl }}
+        contentContainerStyle={{ flexGrow: 1, gap: spacing.md, paddingBottom: spacing.xl }}
         ListHeaderComponent={
-          <View>
+          <View style={{ gap: spacing.md, marginBottom: spacing.md }}>
             {rescheduleRequests.length > 0 && (
-              <View style={{ gap: spacing.md, marginBottom: spacing.md }}>
+              <View style={{ gap: spacing.md }}>
                 {rescheduleRequests.map((req) => {
                   const appt = appointments.find((a) => a.id === req.appointmentId);
                   return (
@@ -84,29 +135,41 @@ export default function MyAppointmentsScreen() {
                 })}
               </View>
             )}
-          </View>
-        }
-        ListEmptyComponent={<Text style={styles.empty}>Još uvek nemaš zakazanih termina.</Text>}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Text style={styles.date}>
-                {item.date} • {item.startTime}–{item.endTime}
-              </Text>
-              <StatusBadge status={item.status} />
-            </View>
-            <Text style={styles.services}>{item.serviceNames.join(', ')}</Text>
-            <Text style={styles.people}>{item.peopleCount} {item.peopleCount === 1 ? 'osoba' : 'osobe/a'}</Text>
-            {item.status !== 'otkazano' && (
-              <View style={styles.actions}>
-                {item.status === 'zakazano' && (
-                  <Button title="Potvrdi dolazak" variant="secondary" onPress={() => handleConfirm(item)} />
-                )}
-                <Button title="Otkaži" variant="outline" onPress={() => handleCancel(item)} />
+
+            {upcoming.length > 0 && (
+              <View style={{ gap: spacing.md }}>
+                <Text style={styles.sectionTitle}>Predstojeći termini</Text>
+                {upcoming.map(renderCard)}
               </View>
             )}
+
+            <Text style={styles.sectionTitle}>Istorija termina</Text>
           </View>
-        )}
+        }
+        ListEmptyComponent={
+          <Text style={styles.empty}>
+            {appointments.length === 0 ? 'Još uvek nemaš zakazanih termina.' : 'Još uvek nemaš prošlih termina.'}
+          </Text>
+        }
+        renderItem={({ item }) => renderCard(item)}
+      />
+
+      <RebookPrompt
+        appointment={rebookCandidate}
+        onDone={() => {
+          if (rebookCandidate) setDismissedRebookIds((prev) => [...prev, rebookCandidate.id]);
+        }}
+      />
+
+      <ClientChat
+        clientId={editRequest ? appUser?.uid ?? null : null}
+        title="Poruke sa Olgicom"
+        initialText={
+          editRequest
+            ? `Zdravo! Da li mogu da promenim termin ${editRequest.date} u ${editRequest.startTime}? Predlažem: `
+            : undefined
+        }
+        onClose={() => setEditRequest(null)}
       />
     </ScreenContainer>
   );
@@ -114,6 +177,7 @@ export default function MyAppointmentsScreen() {
 
 const styles = StyleSheet.create({
   empty: { color: colors.textSecondary, ...typography.body, textAlign: 'center', marginTop: spacing.xl },
+  sectionTitle: { ...typography.bodyBold, color: colors.textPrimary },
   card: { backgroundColor: colors.surface, borderRadius: radius.md, padding: spacing.md, gap: spacing.xs },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   date: { ...typography.bodyBold, color: colors.textPrimary },
