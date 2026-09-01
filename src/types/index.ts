@@ -89,6 +89,14 @@ export interface UrgentRequest {
   createdAt: number;
 }
 
+export interface AppVersionInfo {
+  versionName: string;
+  versionCode: number;
+  apkUrl: string;
+  releaseNotes: string | null;
+  updatedAt: number;
+}
+
 export interface ChatConversation {
   clientId: string;
   clientName: string;

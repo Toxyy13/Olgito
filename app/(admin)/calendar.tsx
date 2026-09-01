@@ -10,8 +10,11 @@ import { useAppAlert } from '../../src/context/AlertContext';
 import { watchAppointmentsForDate, cancelAppointment } from '../../src/api/appointments';
 import { createRescheduleRequest } from '../../src/api/rescheduleRequests';
 import { watchAllServices } from '../../src/api/services';
+import { watchBlockedSlotsForDate } from '../../src/api/workingHours';
+import { useClosedDatesForMonth } from '../../src/hooks/useClosedDates';
+import { buildClosedDayMarks } from '../../src/utils/calendarMarks';
 import { todayISO } from '../../src/utils/time';
-import type { Appointment, ServiceType } from '../../src/types';
+import type { Appointment, ServiceType, BlockedSlot } from '../../src/types';
 
 // LocaleConfig se već postavlja u klijentskom kalendaru; ovde je siguran no-op ako je već setovan.
 if (!LocaleConfig.locales['sr']) {
@@ -30,15 +33,19 @@ const TODAY = todayISO();
 export default function AdminCalendarScreen() {
   const { alert } = useAppAlert();
   const [selectedDate, setSelectedDate] = useState(TODAY);
+  const [monthAnchor, setMonthAnchor] = useState(TODAY);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [todayAppointments, setTodayAppointments] = useState<Appointment[]>([]);
+  const [todayBlocked, setTodayBlocked] = useState<BlockedSlot[]>([]);
   const [detail, setDetail] = useState<Appointment | null>(null);
   const [rescheduleMsg, setRescheduleMsg] = useState('');
   const [showReschedule, setShowReschedule] = useState(false);
   const [services, setServices] = useState<ServiceType[]>([]);
+  const closedDates = useClosedDatesForMonth(monthAnchor);
 
   useEffect(() => watchAppointmentsForDate(selectedDate, setAppointments), [selectedDate]);
   useEffect(() => watchAppointmentsForDate(TODAY, setTodayAppointments), []);
+  useEffect(() => watchBlockedSlotsForDate(TODAY, setTodayBlocked), []);
   useEffect(() => watchAllServices(setServices), []);
 
   // Cena za naplatu = zbir cena izabranih usluga × broj osoba (svi dobijaju istu kombinaciju).
@@ -100,7 +107,7 @@ export default function AdminCalendarScreen() {
             <ScreenHeader title="Kalendar" />
 
             <Text style={styles.sectionTitle}>Danas ({TODAY})</Text>
-            {activeToday.length === 0 ? (
+            {activeToday.length === 0 && todayBlocked.length === 0 ? (
               <Text style={styles.empty}>Nema termina za danas.</Text>
             ) : (
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.todayRow}>
@@ -112,13 +119,25 @@ export default function AdminCalendarScreen() {
                     </Text>
                   </Pressable>
                 ))}
+                {todayBlocked.map((b) => (
+                  <View key={b.id} style={[styles.todayCard, styles.todayBlockCard]}>
+                    <Text style={styles.todayTime}>
+                      {b.startTime}–{b.endTime}
+                    </Text>
+                    <Text style={styles.todayName} numberOfLines={1}>
+                      🚫 Pauza{b.reason ? `: ${b.reason}` : ''}
+                    </Text>
+                  </View>
+                ))}
               </ScrollView>
             )}
 
             <Calendar
               current={selectedDate}
               onDayPress={(d) => setSelectedDate(d.dateString)}
-              markedDates={{ [selectedDate]: { selected: true, selectedColor: colors.secondary } }}
+              onMonthChange={(m) => setMonthAnchor(m.dateString)}
+              markingType="custom"
+              markedDates={buildClosedDayMarks(closedDates, selectedDate)}
               theme={calendarTheme}
               style={styles.calendar}
             />
@@ -235,6 +254,7 @@ const styles = StyleSheet.create({
   },
   todayTime: { ...typography.bodyBold, color: colors.textPrimary },
   todayName: { color: colors.textSecondary, ...typography.small },
+  todayBlockCard: { backgroundColor: colors.slotZauzet },
   card: { backgroundColor: colors.surface, borderRadius: radius.md, padding: spacing.md, gap: 4 },
   cardRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   time: { ...typography.bodyBold, color: colors.textPrimary },

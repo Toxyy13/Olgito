@@ -56,6 +56,41 @@ workingHoursRouter.get('/effective', (req, res) => {
   res.json({ hours: weekly ? { closed: !!weekly.closed, start: weekly.start, end: weekly.end } : { closed: true, start: '09:00', end: '17:00' } });
 });
 
+// Vraća listu datuma u opsegu kad Olgica ne radi (ceo dan) — kombinuje
+// izuzetke po datumu i nedeljni raspored — da bi kalendar mogao odjednom da
+// oboji ceo prikazani mesec, umesto da se to proverava dan po dan.
+workingHoursRouter.get('/closed-dates', (req, res) => {
+  const from = String(req.query.from ?? '');
+  const to = String(req.query.to ?? '');
+  if (!from || !to) return res.status(400).json({ error: 'Nedostaju datumi.' });
+
+  const weeklyRows = db.prepare('SELECT * FROM working_hours_weekly').all() as WeeklyRow[];
+  const weeklyByDay = new Map(weeklyRows.map((r) => [r.day, r]));
+
+  const overrides = db
+    .prepare('SELECT date, closed FROM working_hours_overrides WHERE date >= ? AND date <= ?')
+    .all(from, to) as { date: string; closed: number }[];
+  const overrideByDate = new Map(overrides.map((o) => [o.date, !!o.closed]));
+
+  const [fy, fm, fd] = from.split('-').map(Number);
+  const [ty, tm, td] = to.split('-').map(Number);
+  const cursor = new Date(fy, fm - 1, fd);
+  const end = new Date(ty, tm - 1, td);
+  const closedDates: string[] = [];
+
+  while (cursor <= end) {
+    const iso = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}-${String(cursor.getDate()).padStart(2, '0')}`;
+    if (overrideByDate.has(iso)) {
+      if (overrideByDate.get(iso)) closedDates.push(iso);
+    } else if (weeklyByDay.get(WEEKDAY_KEYS[cursor.getDay()])?.closed) {
+      closedDates.push(iso);
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  res.json({ closedDates });
+});
+
 workingHoursRouter.get('/overrides/:date', (req, res) => {
   const row = db.prepare('SELECT * FROM working_hours_overrides WHERE date = ?').get(req.params.date) as OverrideRow | undefined;
   res.json({ override: row ? { date: row.date, closed: !!row.closed, start: row.start, end: row.end } : null });

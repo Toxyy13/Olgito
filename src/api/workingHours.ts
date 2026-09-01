@@ -35,6 +35,13 @@ export async function getEffectiveDayHours(dateISO: string): Promise<DayHours> {
   return res.hours;
 }
 
+// Datumi u opsegu kad Olgica ne radi ceo dan (izuzeci + nedeljni raspored) —
+// za bojenje celog prikazanog meseca u kalendaru odjednom.
+export async function getClosedDatesForRange(fromISO: string, toISO: string): Promise<string[]> {
+  const res = await apiFetch<{ closedDates: string[] }>(`/working-hours/closed-dates?from=${fromISO}&to=${toISO}`);
+  return res.closedDates;
+}
+
 export async function getBlockedSlotsForDate(dateISO: string): Promise<BlockedSlot[]> {
   const res = await apiFetch<{ blockedSlots: BlockedSlot[] }>(`/working-hours/blocked-slots?date=${dateISO}`);
   return res.blockedSlots;

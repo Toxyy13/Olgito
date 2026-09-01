@@ -18,6 +18,8 @@ import {
 } from '../../../src/api/workingHours';
 import type { WeeklyDefaultHours, Weekday, BlockedSlot } from '../../../src/types';
 import { todayISO } from '../../../src/utils/time';
+import { useClosedDatesForMonth } from '../../../src/hooks/useClosedDates';
+import { buildClosedDayMarks } from '../../../src/utils/calendarMarks';
 
 const WEEKDAYS: { key: Weekday; label: string }[] = [
   { key: 'mon', label: 'Ponedeljak' },
@@ -33,6 +35,9 @@ export default function WorkingHoursScreen() {
   const { alert } = useAppAlert();
   const [weekly, setWeekly] = useState<WeeklyDefaultHours | null>(null);
   const [selectedDate, setSelectedDate] = useState(todayISO());
+  const [monthAnchor, setMonthAnchor] = useState(todayISO());
+  const [closedDatesRefreshKey, setClosedDatesRefreshKey] = useState(0);
+  const closedDates = useClosedDatesForMonth(monthAnchor, closedDatesRefreshKey);
   const [overrideClosed, setOverrideClosed] = useState<boolean | null>(null);
   const [overrideStart, setOverrideStart] = useState('09:00');
   const [overrideEnd, setOverrideEnd] = useState('17:00');
@@ -61,6 +66,7 @@ export default function WorkingHoursScreen() {
     setWeekly({ ...weekly, [key]: next });
     try {
       await setDayHours(key, next);
+      setClosedDatesRefreshKey((k) => k + 1);
     } catch {
       setWeekly(weekly);
       alert('Greška', 'Radno vreme nije sačuvano. Pokušaj ponovo.');
@@ -71,6 +77,7 @@ export default function WorkingHoursScreen() {
     try {
       await setOverride({ date: selectedDate, closed, start: overrideStart, end: overrideEnd });
       setOverrideClosed(closed);
+      setClosedDatesRefreshKey((k) => k + 1);
     } catch {
       alert('Greška', 'Izuzetak nije sačuvan. Pokušaj ponovo.');
     }
@@ -80,6 +87,7 @@ export default function WorkingHoursScreen() {
     try {
       await clearOverride(selectedDate);
       setOverrideClosed(null);
+      setClosedDatesRefreshKey((k) => k + 1);
     } catch {
       alert('Greška', 'Izuzetak nije uklonjen. Pokušaj ponovo.');
     }
@@ -148,7 +156,9 @@ export default function WorkingHoursScreen() {
       <Calendar
         current={selectedDate}
         onDayPress={(d) => setSelectedDate(d.dateString)}
-        markedDates={{ [selectedDate]: { selected: true, selectedColor: colors.secondary } }}
+        onMonthChange={(m) => setMonthAnchor(m.dateString)}
+        markingType="custom"
+        markedDates={buildClosedDayMarks(closedDates, selectedDate)}
         theme={calendarTheme}
         style={styles.calendar}
       />
@@ -219,7 +229,7 @@ const styles = StyleSheet.create({
   calendar: { borderRadius: radius.md, overflow: 'hidden' },
   card: { backgroundColor: colors.surface, borderRadius: radius.md, padding: spacing.md, gap: spacing.sm },
   overrideStatus: { color: colors.textSecondary, ...typography.small },
-  actionsRow: { flexDirection: 'row', gap: spacing.sm },
+  actionsRow: { gap: spacing.sm },
   blockRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

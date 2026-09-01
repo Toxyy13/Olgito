@@ -15,6 +15,8 @@ import { createAppointment } from '../../src/api/appointments';
 import { computeAvailableStartTimes } from '../../src/utils/time';
 import type { ServiceType, DayHours } from '../../src/types';
 import { todayISO } from '../../src/utils/time';
+import { useClosedDatesForMonth } from '../../src/hooks/useClosedDates';
+import { buildClosedDayMarks } from '../../src/utils/calendarMarks';
 
 export default function NewAppointmentScreen() {
   const { appUser } = useAuth();
@@ -27,6 +29,8 @@ export default function NewAppointmentScreen() {
   const [selectedDate, setSelectedDate] = useState(
     typeof params.date === 'string' && params.date >= todayISO() ? params.date : todayISO()
   );
+  const [monthAnchor, setMonthAnchor] = useState(selectedDate);
+  const closedDates = useClosedDatesForMonth(monthAnchor);
   const [dayHours, setDayHours] = useState<DayHours | null>(null);
   const [availableStarts, setAvailableStarts] = useState<string[]>([]);
   const [selectedStart, setSelectedStart] = useState<string | null>(null);
@@ -136,7 +140,9 @@ export default function NewAppointmentScreen() {
         current={selectedDate}
         minDate={todayISO()}
         onDayPress={(d) => setSelectedDate(d.dateString)}
-        markedDates={{ [selectedDate]: { selected: true, selectedColor: colors.secondary } }}
+        onMonthChange={(m) => setMonthAnchor(m.dateString)}
+        markingType="custom"
+        markedDates={buildClosedDayMarks(closedDates, selectedDate)}
         theme={calendarTheme}
         style={styles.calendar}
       />

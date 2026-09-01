@@ -3,6 +3,7 @@ import { View, Text, Image, StyleSheet } from 'react-native';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
 import { Button } from '../../src/components/Button';
 import { ClientChat } from '../../src/components/ClientChat';
+import { UpdateChecker } from '../../src/components/UpdateChecker';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { useAuth } from '../../src/context/AuthContext';
 
@@ -31,6 +32,8 @@ export default function ProfileScreen() {
       </View>
 
       <Button title="Poruke od Olgice" onPress={() => setChatOpen(true)} />
+      <View style={{ height: spacing.sm }} />
+      <UpdateChecker />
       <View style={{ height: spacing.sm }} />
       <Button title="Odjavi se" variant="outline" onPress={logout} />
 

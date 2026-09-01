@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ScreenContainer } from '../../../src/components/ScreenContainer';
 import { ScreenHeader } from '../../../src/components/ScreenHeader';
+import { UpdateChecker } from '../../../src/components/UpdateChecker';
 import { useAuth } from '../../../src/context/AuthContext';
 import { colors, radius, spacing, typography } from '../../../src/theme';
 
@@ -41,6 +42,8 @@ export default function SettingsIndexScreen() {
           onPress={() => router.push('/(admin)/settings/rejected-clients')}
         />
       </View>
+
+      <UpdateChecker />
 
       <Pressable style={styles.logout} onPress={logout}>
         <Ionicons name="log-out" size={20} color={colors.textOnPrimary} />

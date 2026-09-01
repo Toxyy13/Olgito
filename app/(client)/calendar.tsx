@@ -8,6 +8,8 @@ import { getEffectiveDayHours } from '../../src/api/workingHours';
 import { watchBusyRanges, type AvailabilityRange } from '../../src/api/availability';
 import { generateSlotStarts, addMinutesToTime, rangesOverlap } from '../../src/utils/time';
 import { SLOT_MINUTES, type DayHours } from '../../src/types';
+import { useClosedDatesForMonth } from '../../src/hooks/useClosedDates';
+import { buildClosedDayMarks } from '../../src/utils/calendarMarks';
 
 LocaleConfig.locales['sr'] = {
   monthNames: ['Januar', 'Februar', 'Mart', 'April', 'Maj', 'Jun', 'Jul', 'Avgust', 'Septembar', 'Oktobar', 'Novembar', 'Decembar'],
@@ -25,8 +27,10 @@ function todayISO() {
 
 export default function ClientCalendarScreen() {
   const [selectedDate, setSelectedDate] = useState(todayISO());
+  const [monthAnchor, setMonthAnchor] = useState(todayISO());
   const [dayHours, setDayHours] = useState<DayHours | null>(null);
   const [busyRanges, setBusyRanges] = useState<AvailabilityRange[]>([]);
+  const closedDates = useClosedDatesForMonth(monthAnchor);
 
   useEffect(() => {
     let cancelled = false;
@@ -70,7 +74,9 @@ export default function ClientCalendarScreen() {
               current={selectedDate}
               minDate={todayISO()}
               onDayPress={(d) => setSelectedDate(d.dateString)}
-              markedDates={{ [selectedDate]: { selected: true, selectedColor: colors.secondary } }}
+              onMonthChange={(m) => setMonthAnchor(m.dateString)}
+              markingType="custom"
+              markedDates={buildClosedDayMarks(closedDates, selectedDate)}
               theme={calendarTheme}
               style={styles.calendar}
             />

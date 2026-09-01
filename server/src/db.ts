@@ -116,6 +116,17 @@ CREATE TABLE IF NOT EXISTS messages (
   createdAt INTEGER NOT NULL
 );
 
+-- Poslednja objavljena verzija aplikacije (za "Proveri ažuriranja" dugme u
+-- appu) — jedan red, ažurira se ručno posle svakog eas build-a.
+CREATE TABLE IF NOT EXISTS app_version (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  versionName TEXT NOT NULL,
+  versionCode INTEGER NOT NULL,
+  apkUrl TEXT NOT NULL,
+  releaseNotes TEXT,
+  updatedAt INTEGER NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_appointments_date ON appointments(date);
 CREATE INDEX IF NOT EXISTS idx_appointments_client ON appointments(clientId);
 CREATE INDEX IF NOT EXISTS idx_urgent_messages_request ON urgent_request_messages(requestId);
