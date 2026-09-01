@@ -73,3 +73,14 @@ export function weekdayKey(dateISO: string): 'mon' | 'tue' | 'wed' | 'thu' | 'fr
   const [y, m, d] = dateISO.split('-').map(Number);
   return keys[new Date(y, m - 1, d).getDay()];
 }
+
+const DAY_NAMES_LONG = ['Nedelja', 'Ponedeljak', 'Utorak', 'Sreda', 'Četvrtak', 'Petak', 'Subota'];
+
+// Za izolovane prikaze konkretnog datuma (kartice termina, naslovi sekcija) —
+// "Sreda, 02.09.2026". Kalendarske mreže (react-native-calendars) ovo NE
+// koriste, samo mesta gde se datum pojavljuje sam za sebe kao tekst.
+export function formatDateLong(dateISO: string): string {
+  const [y, m, d] = dateISO.split('-').map(Number);
+  const dayName = DAY_NAMES_LONG[new Date(y, m - 1, d).getDay()];
+  return `${dayName}, ${String(d).padStart(2, '0')}.${String(m).padStart(2, '0')}.${y}`;
+}

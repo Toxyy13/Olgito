@@ -68,7 +68,7 @@ export default function ServicesSettingsScreen() {
 
   return (
     <ScreenContainer>
-      <ScreenHeader title="Usluge i cenovnik" />
+      <ScreenHeader title="Usluge i cenovnik" showBack />
 
       <FlatList
         style={{ flex: 1 }}

@@ -13,7 +13,7 @@ import { watchAllServices } from '../../src/api/services';
 import { watchBlockedSlotsForDate } from '../../src/api/workingHours';
 import { useClosedDatesForMonth } from '../../src/hooks/useClosedDates';
 import { buildClosedDayMarks } from '../../src/utils/calendarMarks';
-import { todayISO } from '../../src/utils/time';
+import { todayISO, formatDateLong } from '../../src/utils/time';
 import type { Appointment, ServiceType, BlockedSlot } from '../../src/types';
 
 // LocaleConfig se već postavlja u klijentskom kalendaru; ovde je siguran no-op ako je već setovan.
@@ -106,7 +106,7 @@ export default function AdminCalendarScreen() {
           <View>
             <ScreenHeader title="Kalendar" />
 
-            <Text style={styles.sectionTitle}>Danas ({TODAY})</Text>
+            <Text style={styles.sectionTitle}>Danas ({formatDateLong(TODAY)})</Text>
             {activeToday.length === 0 && todayBlocked.length === 0 ? (
               <Text style={styles.empty}>Nema termina za danas.</Text>
             ) : (
@@ -143,7 +143,7 @@ export default function AdminCalendarScreen() {
             />
 
             <View style={styles.dayTotalRow}>
-              <Text style={styles.sectionTitle}>Termini za {selectedDate}</Text>
+              <Text style={styles.sectionTitle}>Termini za {formatDateLong(selectedDate)}</Text>
               {activeAppointments.length > 0 && (
                 <Text style={styles.dayTotal}>Ukupno: {activeAppointments.reduce((sum, a) => sum + priceFor(a), 0)} RSD</Text>
               )}
@@ -180,7 +180,7 @@ export default function AdminCalendarScreen() {
                 <Text style={styles.modalPhone}>{detail.clientPhone}</Text>
                 <StatusBadge status={detail.status} />
                 <Text style={styles.modalLine}>
-                  {detail.date} • {detail.startTime}–{detail.endTime}
+                  {formatDateLong(detail.date)} • {detail.startTime}–{detail.endTime}
                 </Text>
                 <Text style={styles.modalLine}>{detail.serviceNames.join(', ')}</Text>
                 <Text style={styles.modalLine}>{detail.peopleCount} osoba/e</Text>

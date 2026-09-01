@@ -16,7 +16,7 @@ export default function RejectedClientsScreen() {
 
   return (
     <ScreenContainer>
-      <ScreenHeader title="Odbijeni klijenti" />
+      <ScreenHeader title="Odbijeni klijenti" showBack />
       <FlatList
         style={{ flex: 1 }}
         data={rejected}

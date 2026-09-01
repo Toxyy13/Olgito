@@ -11,7 +11,7 @@ import { useAuth } from '../../src/context/AuthContext';
 import { useAppAlert } from '../../src/context/AlertContext';
 import { watchAppointmentsForClient, cancelAppointment, confirmAppointment } from '../../src/api/appointments';
 import { watchRescheduleRequestsForClient, respondRescheduleRequest } from '../../src/api/rescheduleRequests';
-import { dateTimeToMillis } from '../../src/utils/time';
+import { dateTimeToMillis, formatDateLong } from '../../src/utils/time';
 import type { Appointment, RescheduleRequest } from '../../src/types';
 
 export default function MyAppointmentsScreen() {
@@ -85,7 +85,7 @@ export default function MyAppointmentsScreen() {
     <View style={styles.card} key={item.id}>
       <View style={styles.cardHeader}>
         <Text style={styles.date}>
-          {item.date} • {item.startTime}–{item.endTime}
+          {formatDateLong(item.date)} • {item.startTime}–{item.endTime}
         </Text>
         <StatusBadge status={item.status} />
       </View>
@@ -122,7 +122,7 @@ export default function MyAppointmentsScreen() {
                       <Text style={styles.rescheduleTitle}>Olgica traži pomeranje termina</Text>
                       {appt && (
                         <Text style={styles.rescheduleAppt}>
-                          {appt.date} • {appt.startTime}–{appt.endTime}
+                          {formatDateLong(appt.date)} • {appt.startTime}–{appt.endTime}
                         </Text>
                       )}
                       <Text style={styles.rescheduleMessage}>{req.message}</Text>

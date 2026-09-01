@@ -17,7 +17,7 @@ import {
   removeBlockedSlot,
 } from '../../../src/api/workingHours';
 import type { WeeklyDefaultHours, Weekday, BlockedSlot } from '../../../src/types';
-import { todayISO } from '../../../src/utils/time';
+import { todayISO, formatDateLong } from '../../../src/utils/time';
 import { useClosedDatesForMonth } from '../../../src/hooks/useClosedDates';
 import { buildClosedDayMarks } from '../../../src/utils/calendarMarks';
 
@@ -117,7 +117,7 @@ export default function WorkingHoursScreen() {
 
   return (
     <ScreenContainer scroll>
-      <ScreenHeader title="Radno vreme" />
+      <ScreenHeader title="Radno vreme" showBack />
 
       <Text style={styles.section}>Nedeljni raspored (ponavlja se)</Text>
       {weekly &&
@@ -180,7 +180,7 @@ export default function WorkingHoursScreen() {
         {overrideClosed !== null && <Button title="Ukloni izuzetak" variant="outline" onPress={handleClearOverride} />}
       </View>
 
-      <Text style={styles.section}>Pauze u toku dana ({selectedDate})</Text>
+      <Text style={styles.section}>Pauze u toku dana ({formatDateLong(selectedDate)})</Text>
       <View style={styles.card}>
         {blocked.map((b) => (
           <View key={b.id} style={styles.blockRow}>
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderRadius: radius.md,
     padding: spacing.md,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.sm,
   },
   dayLabel: { ...typography.body, color: colors.textPrimary, marginBottom: 4 },
   timeRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   dash: { color: colors.textSecondary },
-  calendar: { borderRadius: radius.md, overflow: 'hidden' },
+  calendar: { borderRadius: radius.md, overflow: 'hidden', marginBottom: spacing.md },
   card: { backgroundColor: colors.surface, borderRadius: radius.md, padding: spacing.md, gap: spacing.sm },
   overrideStatus: { color: colors.textSecondary, ...typography.small },
   actionsRow: { gap: spacing.sm },

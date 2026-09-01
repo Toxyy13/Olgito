@@ -87,7 +87,7 @@ export default function EarningsScreen() {
 
   return (
     <ScreenContainer>
-      <ScreenHeader title="Zarada" />
+      <ScreenHeader title="Zarada" showBack />
 
       <View style={styles.tabs}>
         {(['day', 'week', 'month'] as Period[]).map((p) => (

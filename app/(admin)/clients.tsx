@@ -9,6 +9,7 @@ import { colors, radius, spacing, typography } from '../../src/theme';
 import { useAppAlert } from '../../src/context/AlertContext';
 import { watchAllClients, blockClient, unblockClient } from '../../src/api/users';
 import { getClientAppointmentHistory } from '../../src/api/appointments';
+import { formatDateLong } from '../../src/utils/time';
 import type { AppUser, Appointment } from '../../src/types';
 
 export default function ClientsScreen() {
@@ -101,7 +102,7 @@ export default function ClientsScreen() {
                       <View style={styles.historyRow}>
                         <View style={{ flex: 1 }}>
                           <Text style={styles.historyDate}>
-                            {item.date} • {item.startTime}–{item.endTime}
+                            {formatDateLong(item.date)} • {item.startTime}–{item.endTime}
                           </Text>
                           <Text style={styles.modalContact}>{item.serviceNames.join(', ')}</Text>
                         </View>

@@ -42,6 +42,8 @@ urgentRequestsRouter.post('/', requireApprovedClient, (req, res) => {
 
 urgentRequestsRouter.post('/:id/resolve', requireAdmin, (req, res) => {
   db.prepare("UPDATE urgent_requests SET status = 'resolved' WHERE id = ?").run(req.params.id);
+  // Briše i čet vezan za ovaj zahtev — i kod klijenta, jer čitaju istu tabelu.
+  db.prepare('DELETE FROM urgent_request_messages WHERE requestId = ?').run(req.params.id);
   res.json({ ok: true });
 });
 

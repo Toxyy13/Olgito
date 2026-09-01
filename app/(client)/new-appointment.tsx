@@ -10,10 +10,10 @@ import { useAuth } from '../../src/context/AuthContext';
 import { useAppAlert } from '../../src/context/AlertContext';
 import { watchActiveServices } from '../../src/api/services';
 import { getEffectiveDayHours } from '../../src/api/workingHours';
-import { getBusyRangesOnce } from '../../src/api/availability';
+import { getBusyRangesOnce, type AvailabilityRange } from '../../src/api/availability';
 import { createAppointment } from '../../src/api/appointments';
-import { computeAvailableStartTimes } from '../../src/utils/time';
-import type { ServiceType, DayHours } from '../../src/types';
+import { computeAvailableStartTimes, generateSlotStarts, addMinutesToTime, rangesOverlap } from '../../src/utils/time';
+import { SLOT_MINUTES, type ServiceType, type DayHours } from '../../src/types';
 import { todayISO } from '../../src/utils/time';
 import { useClosedDatesForMonth } from '../../src/hooks/useClosedDates';
 import { buildClosedDayMarks } from '../../src/utils/calendarMarks';
@@ -32,6 +32,7 @@ export default function NewAppointmentScreen() {
   const [monthAnchor, setMonthAnchor] = useState(selectedDate);
   const closedDates = useClosedDatesForMonth(monthAnchor);
   const [dayHours, setDayHours] = useState<DayHours | null>(null);
+  const [busyRanges, setBusyRanges] = useState<AvailabilityRange[]>([]);
   const [availableStarts, setAvailableStarts] = useState<string[]>([]);
   const [selectedStart, setSelectedStart] = useState<string | null>(null);
   const [note, setNote] = useState('');
@@ -48,11 +49,13 @@ export default function NewAppointmentScreen() {
         if (cancelled) return;
         setDayHours(hours);
         if (hours.closed) {
+          setBusyRanges([]);
           setAvailableStarts([]);
           return;
         }
         const busy = await getBusyRangesOnce(selectedDate);
         if (cancelled) return;
+        setBusyRanges(busy);
         let starts = computeAvailableStartTimes(hours.start, hours.end, busy, peopleCount);
         if (selectedDate === todayISO()) {
           const now = new Date();
@@ -68,6 +71,30 @@ export default function NewAppointmentScreen() {
       cancelled = true;
     };
   }, [selectedDate, peopleCount]);
+
+  // Puna mreža 30-min pozicija u radnom vremenu, sa oznakom da li je svaka
+  // sama za sebe zauzeta — nezavisno od broja osoba, za prikaz cele slike
+  // dana (ne samo validnih polaznih tačaka).
+  const allSlots = useMemo(() => {
+    if (!dayHours || dayHours.closed) return [];
+    return generateSlotStarts(dayHours.start, dayHours.end).map((start) => {
+      const end = addMinutesToTime(start, SLOT_MINUTES);
+      const busy = busyRanges.some((r) => rangesOverlap(r, { startTime: start, endTime: end }));
+      return { start, busy };
+    });
+  }, [dayHours, busyRanges]);
+
+  // Kad je termin izabran, ovoliko uzastopnih 30-min pozicija (koliko osoba,
+  // toliko slotova) treba da bude vizuelno istaknuto kao "rezervisano" ovim
+  // izborom.
+  const highlightedSlots = useMemo(() => {
+    if (!selectedStart) return new Set<string>();
+    const set = new Set<string>();
+    for (let i = 0; i < peopleCount; i++) {
+      set.add(addMinutesToTime(selectedStart, i * SLOT_MINUTES));
+    }
+    return set;
+  }, [selectedStart, peopleCount]);
 
   const toggleService = (id: string) => {
     setSelectedServiceIds((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
@@ -148,21 +175,32 @@ export default function NewAppointmentScreen() {
       />
 
       <Text style={styles.label}>Slobodni termini</Text>
+      {peopleCount > 1 && availableStarts.length > 0 && (
+        <Text style={styles.hint}>Termin traje {peopleCount * SLOT_MINUTES} min — obeleženo je {peopleCount} termina.</Text>
+      )}
       {dayHours?.closed ? (
         <Text style={styles.closed}>Olgica ne radi ovog dana 🌴</Text>
       ) : availableStarts.length === 0 ? (
         <Text style={styles.closed}>Nema slobodnih termina za izabrani broj osoba.</Text>
       ) : (
         <View style={styles.chipsRow}>
-          {availableStarts.map((t) => (
-            <Pressable
-              key={t}
-              onPress={() => setSelectedStart(t)}
-              style={[styles.chip, selectedStart === t && styles.chipActive]}
-            >
-              <Text style={[styles.chipText, selectedStart === t && styles.chipTextActive]}>{t}</Text>
-            </Pressable>
-          ))}
+          {allSlots.map(({ start: t, busy }) => {
+            const isSelectableStart = availableStarts.includes(t);
+            const isHighlighted = highlightedSlots.has(t);
+            const isDisabled = busy || !isSelectableStart;
+            return (
+              <Pressable
+                key={t}
+                disabled={isDisabled}
+                onPress={() => setSelectedStart(t)}
+                style={[styles.chip, isDisabled && styles.chipDisabled, isHighlighted && styles.chipActive]}
+              >
+                <Text style={[styles.chipText, isDisabled && styles.chipTextDisabled, isHighlighted && styles.chipTextActive]}>
+                  {t}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
       )}
 
@@ -194,8 +232,11 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   chipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+  chipDisabled: { backgroundColor: colors.slotZauzet, borderColor: colors.slotZauzet, opacity: 0.6 },
   chipText: { color: colors.textPrimary, ...typography.small },
   chipTextActive: { color: colors.textOnPrimary, fontWeight: '700' },
+  chipTextDisabled: { color: colors.textSecondary },
+  hint: { color: colors.textSecondary, ...typography.small, marginBottom: spacing.sm },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   stepBtn: {
     width: 40,
@@ -219,5 +260,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceAlt,
     color: colors.textPrimary,
     textAlignVertical: 'top',
+    marginBottom: spacing.lg,
   },
 });
