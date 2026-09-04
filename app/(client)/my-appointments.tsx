@@ -6,6 +6,7 @@ import { StatusBadge } from '../../src/components/StatusBadge';
 import { Button } from '../../src/components/Button';
 import { RebookPrompt } from '../../src/components/RebookPrompt';
 import { ClientChat } from '../../src/components/ClientChat';
+import { StatTile, StatTileRow } from '../../src/components/StatTile';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { useAuth } from '../../src/context/AuthContext';
 import { useAppAlert } from '../../src/context/AlertContext';
@@ -80,9 +81,11 @@ export default function MyAppointmentsScreen() {
   const history = appointments
     .filter((a) => a.status === 'otkazano' || a.startAtMillis <= Date.now())
     .sort((a, b) => b.startAtMillis - a.startAtMillis);
+  const cancelledCount = appointments.filter((a) => a.status === 'otkazano').length;
+  const completedCount = history.length - cancelledCount;
 
   const renderCard = (item: Appointment) => (
-    <View style={styles.card} key={item.id}>
+    <View style={[styles.card, item.status === 'potvrdjeno' && styles.cardHighlighted]} key={item.id}>
       <View style={styles.cardHeader}>
         <Text style={styles.date}>
           {formatDateLong(item.date)} • {item.startTime}–{item.endTime}
@@ -105,7 +108,16 @@ export default function MyAppointmentsScreen() {
 
   return (
     <ScreenContainer>
-      <ScreenHeader title="Moji termini" />
+      <ScreenHeader eyebrow="Pregled" title="Moji termini" />
+      {appointments.length > 0 && (
+        <View style={{ marginBottom: spacing.md }}>
+          <StatTileRow>
+            <StatTile value={upcoming.length} label="Nadolazeći" />
+            <StatTile value={completedCount} label="Završeni" />
+            <StatTile value={cancelledCount} label="Otkazani" />
+          </StatTileRow>
+        </View>
+      )}
       <FlatList
         style={{ flex: 1 }}
         data={history}
@@ -178,14 +190,24 @@ export default function MyAppointmentsScreen() {
 const styles = StyleSheet.create({
   empty: { color: colors.textSecondary, ...typography.body, textAlign: 'center', marginTop: spacing.xl },
   sectionTitle: { ...typography.bodyBold, color: colors.textPrimary },
-  card: { backgroundColor: colors.surface, borderRadius: radius.md, padding: spacing.md, gap: spacing.xs },
+  card: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    gap: spacing.xs,
+  },
+  cardHighlighted: { backgroundColor: colors.surface, borderColor: 'transparent' },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   date: { ...typography.bodyBold, color: colors.textPrimary },
   services: { color: colors.textSecondary, ...typography.small },
   people: { color: colors.textSecondary, ...typography.small },
   actions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
   rescheduleCard: {
-    backgroundColor: colors.surfaceAlt,
+    backgroundColor: colors.glassBgStrong,
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
     borderRadius: radius.md,
     padding: spacing.md,
     gap: spacing.xs,

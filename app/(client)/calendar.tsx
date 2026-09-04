@@ -69,7 +69,7 @@ export default function ClientCalendarScreen() {
         contentContainerStyle={{ gap: spacing.sm, paddingBottom: spacing.xl }}
         ListHeaderComponent={
           <View style={{ marginBottom: spacing.md }}>
-            <ScreenHeader title="Kalendar" />
+            <ScreenHeader eyebrow="Slobodni termini" title="Kalendar" />
             <Calendar
               current={selectedDate}
               minDate={todayISO()}

@@ -4,20 +4,52 @@ import { StatusBar } from 'expo-status-bar';
 import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import {
+  useFonts as useSpaceGrotesk,
+  SpaceGrotesk_400Regular,
+  SpaceGrotesk_500Medium,
+  SpaceGrotesk_600SemiBold,
+  SpaceGrotesk_700Bold,
+} from '@expo-google-fonts/space-grotesk';
+import {
+  JetBrainsMono_400Regular,
+  JetBrainsMono_500Medium,
+  JetBrainsMono_600SemiBold,
+  JetBrainsMono_700Bold,
+} from '@expo-google-fonts/jetbrains-mono';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { AlertProvider } from '../src/context/AlertContext';
 import { WaitingScreen } from '../src/components/WaitingScreen';
 import { colors } from '../src/theme';
 
 export default function RootLayout() {
+  const [fontsLoaded] = useSpaceGrotesk({
+    SpaceGrotesk_400Regular,
+    SpaceGrotesk_500Medium,
+    SpaceGrotesk_600SemiBold,
+    SpaceGrotesk_700Bold,
+    JetBrainsMono_400Regular,
+    JetBrainsMono_500Medium,
+    JetBrainsMono_600SemiBold,
+    JetBrainsMono_700Bold,
+  });
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <AuthProvider>
           <AlertProvider>
             <StatusBar style="light" />
-            <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }} />
-            <AuthGate />
+            {fontsLoaded ? (
+              <>
+                <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }} />
+                <AuthGate />
+              </>
+            ) : (
+              <View style={{ position: 'absolute', inset: 0 }}>
+                <WaitingScreen />
+              </View>
+            )}
           </AlertProvider>
         </AuthProvider>
       </SafeAreaProvider>

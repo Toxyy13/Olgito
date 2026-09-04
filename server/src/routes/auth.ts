@@ -22,10 +22,20 @@ authRouter.post('/register', async (req, res) => {
 
   const id = randomUUID();
   const passwordHash = await bcrypt.hash(password, 10);
-  db.prepare(
-    `INSERT INTO users (id, role, email, passwordHash, phone, fullName, age, photoURL, profileComplete, accountStatus, createdAt)
-     VALUES (?, 'client', ?, ?, '', '', NULL, NULL, 0, 'pending', ?)`
-  ).run(id, email.toLowerCase(), passwordHash, Date.now());
+  try {
+    db.prepare(
+      `INSERT INTO users (id, role, email, passwordHash, phone, fullName, age, photoURL, profileComplete, accountStatus, createdAt)
+       VALUES (?, 'client', ?, ?, '', '', NULL, NULL, 0, 'pending', ?)`
+    ).run(id, email.toLowerCase(), passwordHash, Date.now());
+  } catch (err: any) {
+    // Race between the existence check above and the insert (e.g. a
+    // double-tapped submit button) — treat it the same as the check above
+    // instead of letting the raw SQLite error crash the process.
+    if (err?.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+      return res.status(409).json({ error: 'Već postoji nalog sa ovim emailom.' });
+    }
+    throw err;
+  }
 
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(id) as UserRow;
   res.json({ token: signToken(id), user: toPublicUser(user) });

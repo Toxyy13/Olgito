@@ -20,7 +20,7 @@ export default function UrgentRequestsScreen() {
 
   return (
     <ScreenContainer>
-      <ScreenHeader title="Hitni zahtevi 🚨" />
+      <ScreenHeader eyebrow="Prioritet" title="Hitni zahtevi" description="Klijenti kojima ne odgovara nijedan slobodan termin." />
       <FlatList
         style={{ flex: 1 }}
         data={open}
@@ -68,11 +68,13 @@ const styles = StyleSheet.create({
   title: { ...typography.h2, color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.md },
   empty: { color: colors.textSecondary, ...typography.body, textAlign: 'center', marginTop: spacing.xl },
   card: {
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
     borderRadius: radius.md,
     padding: spacing.md,
     gap: spacing.xs,
-    borderLeftWidth: 5,
+    borderLeftWidth: 4,
     borderLeftColor: colors.accent,
   },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
@@ -82,7 +84,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: colors.secondary,
+    backgroundColor: colors.glassBgStrong,
     alignItems: 'center',
     justifyContent: 'center',
   },

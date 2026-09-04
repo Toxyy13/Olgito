@@ -116,8 +116,8 @@ export default function WorkingHoursScreen() {
   };
 
   return (
-    <ScreenContainer scroll>
-      <ScreenHeader title="Radno vreme" showBack />
+    <ScreenContainer scroll showBack>
+      <ScreenHeader eyebrow="Salon" title="Radno vreme" />
 
       <Text style={styles.section}>Nedeljni raspored (ponavlja se)</Text>
       {weekly &&
@@ -207,7 +207,9 @@ const styles = StyleSheet.create({
   dayRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: spacing.sm,
@@ -216,18 +218,25 @@ const styles = StyleSheet.create({
   timeRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   timeInput: {
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.inputBorder,
     borderRadius: radius.sm,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     width: 70,
     color: colors.textPrimary,
-    backgroundColor: colors.surfaceAlt,
+    backgroundColor: colors.inputBg,
     textAlign: 'center',
   },
   dash: { color: colors.textSecondary },
   calendar: { borderRadius: radius.md, overflow: 'hidden', marginBottom: spacing.md },
-  card: { backgroundColor: colors.surface, borderRadius: radius.md, padding: spacing.md, gap: spacing.sm },
+  card: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
   overrideStatus: { color: colors.textSecondary, ...typography.small },
   actionsRow: { gap: spacing.sm },
   blockRow: {
@@ -236,7 +245,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.xs,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.glassBorder,
   },
   blockText: { color: colors.textPrimary, ...typography.body },
 });

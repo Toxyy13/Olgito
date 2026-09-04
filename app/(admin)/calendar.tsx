@@ -106,7 +106,7 @@ export default function AdminCalendarScreen() {
         contentContainerStyle={{ gap: spacing.sm, paddingBottom: spacing.xl }}
         ListHeaderComponent={
           <View>
-            <ScreenHeader title="Kalendar" />
+            <ScreenHeader eyebrow="Pregled" title="Kalendar" />
 
             <Text style={styles.sectionTitle}>Danas ({formatDateLong(TODAY)})</Text>
             {activeToday.length === 0 && todayBlocked.length === 0 ? (

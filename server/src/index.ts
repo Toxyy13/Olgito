@@ -41,6 +41,14 @@ async function bootstrapAdmin() {
 }
 
 async function main() {
+  // Bez ovoga, neuhvaćena greška u BILO KOM async route handleru (npr.
+  // race na duplo poslat zahtev) obara ceo Node proces — i sve korisnike,
+  // ne samo onaj jedan zahtev. Express 4 ne hvata odbačene promise-e iz
+  // async handlera sam od sebe.
+  process.on('unhandledRejection', (reason) => {
+    console.error('Unhandled promise rejection:', reason);
+  });
+
   await bootstrapAdmin();
 
   const app = express();

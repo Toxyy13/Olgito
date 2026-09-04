@@ -86,8 +86,8 @@ export default function EarningsScreen() {
   const total = active.reduce((sum, a) => sum + priceFor(a), 0);
 
   return (
-    <ScreenContainer>
-      <ScreenHeader title="Zarada" showBack />
+    <ScreenContainer showBack>
+      <ScreenHeader eyebrow="Statistika" title="Zarada" />
 
       <View style={styles.tabs}>
         {(['day', 'week', 'month'] as Period[]).map((p) => (
@@ -128,17 +128,16 @@ export default function EarningsScreen() {
 }
 
 const styles = StyleSheet.create({
-  tabs: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
+  tabs: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg, backgroundColor: colors.glassBg, borderRadius: radius.pill, padding: 4 },
   tab: {
     flex: 1,
     paddingVertical: spacing.sm,
     borderRadius: radius.pill,
-    backgroundColor: colors.surfaceAlt,
     alignItems: 'center',
   },
-  tabActive: { backgroundColor: colors.primary },
-  tabText: { color: colors.textSecondary, ...typography.bodyBold },
-  tabTextActive: { color: colors.textOnPrimary },
+  tabActive: { backgroundColor: colors.accent },
+  tabText: { ...typography.mono, fontSize: 11, color: colors.textSecondary, textTransform: 'uppercase' },
+  tabTextActive: { color: colors.background, fontFamily: typography.monoBold.fontFamily },
   nav: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -147,7 +146,9 @@ const styles = StyleSheet.create({
   },
   navLabel: { ...typography.bodyBold, color: colors.textPrimary },
   totalCard: {
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
     borderRadius: radius.lg,
     padding: spacing.xl,
     alignItems: 'center',

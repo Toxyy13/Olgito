@@ -4,9 +4,10 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ScreenContainer } from '../../../src/components/ScreenContainer';
 import { ScreenHeader } from '../../../src/components/ScreenHeader';
+import { GlassCard } from '../../../src/components/GlassCard';
 import { UpdateChecker } from '../../../src/components/UpdateChecker';
 import { useAuth } from '../../../src/context/AuthContext';
-import { colors, radius, spacing, typography } from '../../../src/theme';
+import { colors, radius, spacing, typography, fonts } from '../../../src/theme';
 
 export default function SettingsIndexScreen() {
   const router = useRouter();
@@ -14,28 +15,28 @@ export default function SettingsIndexScreen() {
 
   return (
     <ScreenContainer scroll>
-      <ScreenHeader title="Podešavanja" />
+      <ScreenHeader eyebrow="Salon" title="Podešavanja" />
 
-      <View style={styles.content}>
-        <MenuItem
+      <View style={styles.grid}>
+        <MenuTile
           icon="time"
           label="Radno vreme"
           subtitle="Nedeljni raspored, slobodni dani, pauze"
           onPress={() => router.push('/(admin)/settings/working-hours')}
         />
-        <MenuItem
+        <MenuTile
           icon="pricetag"
           label="Usluge i cenovnik"
           subtitle="Dodaj usluge i uredi cene"
           onPress={() => router.push('/(admin)/settings/services')}
         />
-        <MenuItem
+        <MenuTile
           icon="cash"
           label="Zarada"
           subtitle="Ukupna zarada po danu, nedelji i mesecu"
           onPress={() => router.push('/(admin)/settings/earnings')}
         />
-        <MenuItem
+        <MenuTile
           icon="close-circle"
           label="Odbijeni klijenti"
           subtitle="Nalozi koje si odbila"
@@ -53,7 +54,7 @@ export default function SettingsIndexScreen() {
   );
 }
 
-function MenuItem({
+function MenuTile({
   icon,
   label,
   subtitle,
@@ -65,40 +66,33 @@ function MenuItem({
   onPress: () => void;
 }) {
   return (
-    <Pressable style={styles.item} onPress={onPress}>
-      <View style={styles.iconWrap}>
-        <Ionicons name={icon} size={22} color={colors.textOnPrimary} />
-      </View>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.itemLabel}>{label}</Text>
-        <Text style={styles.itemSubtitle}>{subtitle}</Text>
-      </View>
-      <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+    <Pressable style={styles.tileWrap} onPress={onPress}>
+      <GlassCard style={styles.tile}>
+        <View style={styles.iconWrap}>
+          <Ionicons name={icon} size={22} color={colors.textOnPrimary} />
+        </View>
+        <Text style={styles.tileLabel} numberOfLines={2}>{label}</Text>
+        <Text style={styles.tileSubtitle} numberOfLines={3}>{subtitle}</Text>
+      </GlassCard>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { flex: 1, justifyContent: 'center', gap: spacing.sm },
-  item: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    marginBottom: spacing.sm,
-  },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.sm },
+  tileWrap: { width: '47%', height: 168 },
+  tile: { flex: 1, gap: spacing.xs },
   iconWrap: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: colors.surfaceAlt,
+    backgroundColor: colors.glassBgStrong,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: spacing.xs,
   },
-  itemLabel: { ...typography.bodyBold, color: colors.textPrimary },
-  itemSubtitle: { color: colors.textSecondary, ...typography.small },
+  tileLabel: { fontFamily: fonts.headingSemibold, fontSize: 15, color: colors.textPrimary },
+  tileSubtitle: { color: colors.textSecondary, ...typography.small, fontSize: 12, lineHeight: 16 },
   logout: {
     flexDirection: 'row',
     alignItems: 'center',

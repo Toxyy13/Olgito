@@ -37,6 +37,29 @@ export const colors = {
   danger: '#E63946',
   success: '#2DC653',
   warning: '#FFB703',
+
+  // "Staklene" kartice (glassmorphism) — providna bela preko tamnozelene
+  // pozadine, sa tankim providnim okvirom. Koristi se za hero/brend delove
+  // ekrana, dok liste/kartice sa podacima ostaju pune boje (surface) radi
+  // čitljivosti.
+  glassBg: 'rgba(255,255,255,0.08)',
+  glassBorder: 'rgba(255,255,255,0.15)',
+  glassBgStrong: 'rgba(255,255,255,0.14)',
+
+  // Polja za unos (TextInput) na staklenim karticama — skoro puna, "udubljena"
+  // pozadina (dovoljno neprozirna da se blur kartice iza ne provlači kroz
+  // polje i ne izgleda mutno) i svetliji okvir, da se jasno razlikuju od
+  // kartice iza njih.
+  inputBg: '#0A2A1E',
+  inputBorder: 'rgba(255,255,255,0.3)',
+
+  // Pastelne "pilule" za status bedževe — svetla pozadina, tamnozeleni tekst
+  // (isti ton kao background), mono font. Kontrast obrnut u odnosu na
+  // ostatak app-a namerno, ovo je poseban akcenat element.
+  statusZakazanoBg: '#FFE9A8',
+  statusPotvrdjenoBg: '#BFEFD3',
+  statusOtkazanoBg: '#FFCDD2',
+  statusTextOnPastel: '#0B6E4F',
 } as const;
 
 export type AppColors = typeof colors;

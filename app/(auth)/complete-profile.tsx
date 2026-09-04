@@ -7,6 +7,8 @@ import { completeProfile } from '../../src/api/users';
 import { uploadProfilePhoto } from '../../src/api/upload';
 import { Button } from '../../src/components/Button';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
+import { GlassCard } from '../../src/components/GlassCard';
+import { EyebrowLabel } from '../../src/components/EyebrowLabel';
 import { colors, spacing, typography } from '../../src/theme';
 
 export default function CompleteProfileScreen() {
@@ -85,7 +87,8 @@ export default function CompleteProfileScreen() {
         )}
       </Pressable>
 
-      <View style={styles.card}>
+      <GlassCard style={styles.card}>
+        <EyebrowLabel>Korak 1 — Podaci</EyebrowLabel>
         <Text style={styles.label}>Ime i prezime</Text>
         <TextInput
           style={styles.input}
@@ -117,7 +120,7 @@ export default function CompleteProfileScreen() {
 
         {error && <Text style={styles.error}>{error}</Text>}
         <Button title="Sačuvaj i nastavi" onPress={handleSave} loading={loading} />
-      </View>
+      </GlassCard>
     </ScreenContainer>
   );
 }
@@ -131,24 +134,24 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: colors.surfaceAlt,
+    backgroundColor: colors.glassBgStrong,
     borderWidth: 2,
-    borderColor: colors.secondary,
+    borderColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
   photoPlaceholderText: { color: colors.textOnPrimary, ...typography.label },
-  card: { backgroundColor: colors.surface, borderRadius: 20, padding: spacing.lg, gap: spacing.md },
+  card: { gap: spacing.md },
   label: { ...typography.bodyBold, color: colors.textPrimary },
   input: {
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.inputBorder,
     borderRadius: 14,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     fontSize: 16,
     color: colors.textPrimary,
-    backgroundColor: colors.surfaceAlt,
+    backgroundColor: colors.inputBg,
   },
-  error: { color: colors.textOnPrimary, ...typography.small, fontWeight: '700' },
+  error: { color: colors.accent, ...typography.small, fontFamily: typography.bodyBold.fontFamily },
 });

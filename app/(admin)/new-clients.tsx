@@ -19,7 +19,7 @@ export default function NewClientsScreen() {
 
   return (
     <ScreenContainer>
-      <ScreenHeader title="Novi klijenti" />
+      <ScreenHeader eyebrow="Nalozi na čekanju" title="Novi klijenti" description="Odobri ili odbij nove registracije." />
       <FlatList
         style={{ flex: 1 }}
         data={pending}
@@ -56,14 +56,21 @@ export default function NewClientsScreen() {
 const styles = StyleSheet.create({
   title: { ...typography.h2, color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.md },
   empty: { color: colors.textSecondary, ...typography.body, textAlign: 'center', marginTop: spacing.xl },
-  card: { backgroundColor: colors.surface, borderRadius: radius.md, padding: spacing.md, gap: spacing.md },
+  card: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    gap: spacing.md,
+  },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   avatar: { width: 52, height: 52, borderRadius: 26 },
   avatarPlaceholder: {
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: colors.secondary,
+    backgroundColor: colors.glassBgStrong,
     alignItems: 'center',
     justifyContent: 'center',
   },

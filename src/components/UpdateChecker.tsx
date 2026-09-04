@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Platform, Linking } from 'react-native';
 import * as Application from 'expo-application';
 import { Button } from './Button';
-import { colors, radius, spacing, typography } from '../theme';
+import { GlassCard } from './GlassCard';
+import { EyebrowLabel } from './EyebrowLabel';
+import { colors, spacing, typography } from '../theme';
 import { useAppAlert } from '../context/AlertContext';
 import { getLatestAppVersion } from '../api/appVersion';
 
@@ -45,16 +47,15 @@ export function UpdateChecker() {
   };
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.label}>Verzija aplikacije</Text>
+    <GlassCard style={styles.card}>
+      <EyebrowLabel>Verzija aplikacije</EyebrowLabel>
       <Text style={styles.value}>{currentVersionName}</Text>
       <Button title="Proveri ažuriranja" variant="secondary" onPress={handleCheck} loading={checking} />
-    </View>
+    </GlassCard>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: colors.surface, borderRadius: radius.md, padding: spacing.md, gap: spacing.sm },
-  label: { color: colors.textSecondary, ...typography.small },
+  card: { gap: spacing.sm, marginTop: spacing.md },
   value: { ...typography.bodyBold, color: colors.textPrimary },
 });

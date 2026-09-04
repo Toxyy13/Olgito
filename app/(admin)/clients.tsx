@@ -39,7 +39,7 @@ export default function ClientsScreen() {
 
   return (
     <ScreenContainer>
-      <ScreenHeader title="Klijenti" />
+      <ScreenHeader eyebrow="Baza klijenata" title="Klijenti" description={`${filtered.length} ${filtered.length === 1 ? 'klijent' : 'klijenata'} u bazi.`} />
       <TextInput
         style={styles.search}
         placeholder="Pretraži po imenu ili broju..."
@@ -148,17 +148,19 @@ const styles = StyleSheet.create({
   title: { ...typography.h2, color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.sm },
   search: {
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.inputBorder,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    backgroundColor: colors.surfaceAlt,
+    backgroundColor: colors.inputBg,
     color: colors.textPrimary,
   },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
     borderRadius: radius.md,
     padding: spacing.md,
     gap: spacing.md,
@@ -168,17 +170,19 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: colors.secondary,
+    backgroundColor: colors.glassBgStrong,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarInitial: { color: colors.textOnPrimary, fontWeight: '800', fontSize: 18 },
   name: { ...typography.bodyBold, color: colors.textPrimary },
-  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   modalCard: {
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: radius.lg,
-    borderTopRightRadius: radius.lg,
+    backgroundColor: colors.background,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
     padding: spacing.lg,
     gap: spacing.sm,
   },
@@ -188,7 +192,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: colors.secondary,
+    backgroundColor: colors.glassBgStrong,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -198,7 +202,9 @@ const styles = StyleSheet.create({
   historyRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surfaceAlt,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
     borderRadius: radius.sm,
     padding: spacing.sm,
   },

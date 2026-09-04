@@ -44,12 +44,12 @@ export default function UrgentRequestScreen() {
 
   return (
     <ScreenContainer scroll>
-      <ScreenHeader title="Hitan zahtev 🚨" />
+      <ScreenHeader
+        eyebrow="Nema slobodnog termina?"
+        title="Hitan zahtev"
+        description="Javi Olgici kada bi ti termin bio potreban — potrudiće se da ti izađe u susret."
+      />
       <View style={styles.content}>
-        <Text style={styles.subtitle}>
-          Ako ti nijedan slobodan termin ne odgovara, javi Olgici kada bi ti termin bio potreban — potrudiće se da ti
-          izađe u susret.
-        </Text>
         <View style={styles.card}>
           <Text style={styles.label}>Kada bi ti termin bio potreban i zašto</Text>
           <TextInput
@@ -86,22 +86,35 @@ export default function UrgentRequestScreen() {
 
 const styles = StyleSheet.create({
   content: { flex: 1, justifyContent: 'center' },
-  subtitle: { color: colors.textSecondary, ...typography.body, marginBottom: spacing.lg },
-  card: { backgroundColor: colors.surface, borderRadius: radius.md, padding: spacing.lg, gap: spacing.md },
+  card: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
+    borderRadius: radius.md,
+    padding: spacing.lg,
+    gap: spacing.md,
+  },
   label: { ...typography.bodyBold, color: colors.textPrimary },
   input: {
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.inputBorder,
     borderRadius: radius.md,
     padding: spacing.md,
     minHeight: 100,
-    backgroundColor: colors.surfaceAlt,
+    backgroundColor: colors.inputBg,
     color: colors.textPrimary,
     textAlignVertical: 'top',
   },
   history: { gap: spacing.sm, marginTop: spacing.lg },
   historyTitle: { ...typography.bodyBold, color: colors.textPrimary },
-  historyCard: { backgroundColor: colors.surface, borderRadius: radius.md, padding: spacing.md, gap: spacing.xs },
+  historyCard: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    gap: spacing.xs,
+  },
   historyHeader: { flexDirection: 'row' },
   historyStatus: { ...typography.label, color: colors.sun },
   historyNote: { color: colors.textPrimary, ...typography.body },

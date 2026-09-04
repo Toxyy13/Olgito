@@ -67,8 +67,8 @@ export default function ServicesSettingsScreen() {
   const handleDelete = (id: string) => deleteService(id).catch(() => alert('Greška', 'Usluga nije obrisana. Pokušaj ponovo.'));
 
   return (
-    <ScreenContainer>
-      <ScreenHeader title="Usluge i cenovnik" showBack />
+    <ScreenContainer showBack>
+      <ScreenHeader eyebrow="Salon" title="Usluge i cenovnik" />
 
       <FlatList
         style={{ flex: 1 }}
@@ -125,30 +125,44 @@ export default function ServicesSettingsScreen() {
 
 const styles = StyleSheet.create({
   title: { ...typography.h2, color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.md },
-  card: { backgroundColor: colors.surface, borderRadius: radius.md, padding: spacing.md, gap: spacing.sm },
+  card: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   name: { ...typography.bodyBold, color: colors.textPrimary },
   inactive: { color: colors.textSecondary, textDecorationLine: 'line-through' },
   priceRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   priceInput: {
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.inputBorder,
     borderRadius: radius.sm,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     width: 90,
     color: colors.textPrimary,
-    backgroundColor: colors.surfaceAlt,
+    backgroundColor: colors.inputBg,
   },
   rsd: { color: colors.textSecondary, ...typography.small },
-  addCard: { backgroundColor: colors.surfaceAlt, borderRadius: radius.md, padding: spacing.md, gap: spacing.sm },
+  addCard: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
   addTitle: { ...typography.bodyBold, color: colors.textPrimary },
   input: {
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.inputBorder,
     borderRadius: radius.md,
     padding: spacing.md,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.inputBg,
     color: colors.textPrimary,
   },
 });
