@@ -140,6 +140,77 @@ appointmentsRouter.post('/', requireApprovedClient, async (req, res) => {
   res.json({ appointment: toAppointment(row) });
 });
 
+// Olgica ručno dodaje termin za nekog ko je zvao telefonom i nema app —
+// klijent nije registrovan korisnik, pa se ime/telefon upisuju kao običan
+// tekst, a clientId je samo generisan UUID (ne postoji nalog iza njega).
+// Status ide odmah na "potvrđeno" jer je dogovor već potvrđen uživo na telefonu.
+appointmentsRouter.post('/admin', requireAdmin, (req, res) => {
+  const { clientName, clientPhone, serviceIds, serviceNames, peopleCount, date, startTime, note } = req.body ?? {};
+  const people = Number(peopleCount);
+
+  if (typeof clientName !== 'string' || clientName.trim().length < 2) {
+    return res.status(400).json({ error: 'Unesi ime klijenta.' });
+  }
+  if (typeof clientPhone !== 'string' || clientPhone.trim().length < 5) {
+    return res.status(400).json({ error: 'Unesi broj telefona.' });
+  }
+  if (!Array.isArray(serviceIds) || serviceIds.length === 0) {
+    return res.status(400).json({ error: 'Izaberi bar jednu uslugu.' });
+  }
+  if (!people || people < 1 || people > 6) return res.status(400).json({ error: 'Neispravan broj osoba.' });
+  if (typeof date !== 'string' || typeof startTime !== 'string') {
+    return res.status(400).json({ error: 'Nedostaje datum ili vreme.' });
+  }
+
+  const [y, mo, d] = date.split('-').map(Number);
+  const [h, min] = startTime.split(':').map(Number);
+  const startAtMillis = new Date(y, mo - 1, d, h, min).getTime();
+  if (startAtMillis < Date.now()) return res.status(400).json({ error: 'Ne možeš zakazati termin u prošlosti.' });
+
+  const endTime = addMinutesToTime(startTime, people * 30);
+
+  const run = db.transaction(() => {
+    const existing = db
+      .prepare("SELECT startTime, endTime FROM appointments WHERE date = ? AND status != 'otkazano'")
+      .all(date) as Array<{ startTime: string; endTime: string }>;
+    const overlap = existing.some((e) => rangesOverlap(e.startTime, e.endTime, startTime, endTime));
+    if (overlap) throw new Error('SLOT_TAKEN');
+
+    const id = randomUUID();
+    db.prepare(
+      `INSERT INTO appointments
+        (id, clientId, clientName, clientPhone, serviceIds, serviceNames, peopleCount, date, startTime, endTime, startAtMillis, status, note, reminderSentAt, createdAt, cancelledBy)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'potvrdjeno', ?, NULL, ?, NULL)`
+    ).run(
+      id,
+      randomUUID(),
+      clientName.trim(),
+      clientPhone.trim(),
+      JSON.stringify(serviceIds),
+      JSON.stringify(serviceNames ?? []),
+      people,
+      date,
+      startTime,
+      endTime,
+      startAtMillis,
+      note ?? '',
+      Date.now()
+    );
+    return id;
+  });
+
+  let id: string;
+  try {
+    id = run();
+  } catch (e: any) {
+    if (e.message === 'SLOT_TAKEN') return res.status(409).json({ error: 'SLOT_TAKEN' });
+    throw e;
+  }
+
+  const row = db.prepare('SELECT * FROM appointments WHERE id = ?').get(id) as AppointmentRow;
+  res.json({ appointment: toAppointment(row) });
+});
+
 appointmentsRouter.post('/:id/cancel', (req, res) => {
   const appt = db.prepare('SELECT * FROM appointments WHERE id = ?').get(req.params.id) as AppointmentRow | undefined;
   if (!appt) return res.status(404).json({ error: 'Termin ne postoji.' });

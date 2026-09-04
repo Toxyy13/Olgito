@@ -22,6 +22,7 @@ export default function AdminTabsLayout() {
 
   const items: SideMenuItem[] = [
     { name: 'calendar', icon: 'calendar', label: 'Kalendar' },
+    { name: 'new-appointment', icon: 'add-circle', label: 'Dodaj termin' },
     { name: 'new-clients', icon: 'person-add', label: 'Novi klijenti', badge: pendingCount },
     { name: 'clients', icon: 'people', label: 'Klijenti' },
     { name: 'urgent-requests', icon: 'alert-circle', label: 'Hitno', badge: urgentCount },

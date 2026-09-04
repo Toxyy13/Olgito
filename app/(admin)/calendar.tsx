@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Pressable, Modal, TextInput, ScrollView } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
+import { useRouter } from 'expo-router';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { StatusBadge } from '../../src/components/StatusBadge';
@@ -32,6 +33,7 @@ const TODAY = todayISO();
 
 export default function AdminCalendarScreen() {
   const { alert } = useAppAlert();
+  const router = useRouter();
   const [selectedDate, setSelectedDate] = useState(TODAY);
   const [monthAnchor, setMonthAnchor] = useState(TODAY);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -147,6 +149,13 @@ export default function AdminCalendarScreen() {
               {activeAppointments.length > 0 && (
                 <Text style={styles.dayTotal}>Ukupno: {activeAppointments.reduce((sum, a) => sum + priceFor(a), 0)} RSD</Text>
               )}
+            </View>
+            <View style={{ marginTop: spacing.sm, marginBottom: spacing.md }}>
+              <Button
+                title="+ Dodaj termin (telefonom)"
+                variant="secondary"
+                onPress={() => router.push('/(admin)/new-appointment')}
+              />
             </View>
           </View>
         }

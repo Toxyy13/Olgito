@@ -1,33 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, TextInput } from 'react-native';
 import { Calendar } from 'react-native-calendars';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { Button } from '../../src/components/Button';
 import { SlotPicker } from '../../src/components/SlotPicker';
 import { colors, radius, spacing, typography, calendarTheme } from '../../src/theme';
-import { useAuth } from '../../src/context/AuthContext';
 import { useAppAlert } from '../../src/context/AlertContext';
 import { watchActiveServices } from '../../src/api/services';
-import { createAppointment } from '../../src/api/appointments';
+import { createAdminAppointment } from '../../src/api/appointments';
 import { useAvailability } from '../../src/hooks/useAvailability';
 import type { ServiceType } from '../../src/types';
 import { todayISO } from '../../src/utils/time';
 import { useClosedDatesForMonth } from '../../src/hooks/useClosedDates';
 import { buildClosedDayMarks } from '../../src/utils/calendarMarks';
 
-export default function NewAppointmentScreen() {
-  const { appUser } = useAuth();
+export default function AdminNewAppointmentScreen() {
   const { alert } = useAppAlert();
   const router = useRouter();
-  const params = useLocalSearchParams<{ date?: string }>();
+  const [clientName, setClientName] = useState('');
+  const [clientPhone, setClientPhone] = useState('');
   const [services, setServices] = useState<ServiceType[]>([]);
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
   const [peopleCount, setPeopleCount] = useState(1);
-  const [selectedDate, setSelectedDate] = useState(
-    typeof params.date === 'string' && params.date >= todayISO() ? params.date : todayISO()
-  );
+  const [selectedDate, setSelectedDate] = useState(todayISO());
   const [monthAnchor, setMonthAnchor] = useState(selectedDate);
   const closedDates = useClosedDatesForMonth(monthAnchor);
   const { dayHours, availableStarts, allSlots } = useAvailability(selectedDate, peopleCount);
@@ -42,17 +39,17 @@ export default function NewAppointmentScreen() {
     setSelectedServiceIds((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
   };
 
-  const canSubmit = selectedServiceIds.length > 0 && !!selectedStart && !loading;
+  const canSubmit =
+    clientName.trim().length >= 2 && clientPhone.trim().length >= 5 && selectedServiceIds.length > 0 && !!selectedStart && !loading;
 
   const handleBook = async () => {
-    if (!appUser || !selectedStart) return;
+    if (!selectedStart) return;
     setLoading(true);
     try {
       const chosen = services.filter((s) => selectedServiceIds.includes(s.id));
-      await createAppointment({
-        clientId: appUser.uid,
-        clientName: appUser.fullName,
-        clientPhone: appUser.phone,
+      await createAdminAppointment({
+        clientName: clientName.trim(),
+        clientPhone: clientPhone.trim(),
         serviceIds: chosen.map((s) => s.id),
         serviceNames: chosen.map((s) => s.name),
         peopleCount,
@@ -60,16 +57,18 @@ export default function NewAppointmentScreen() {
         startTime: selectedStart,
         note,
       });
-      alert('Uspešno zakazano', `Termin je zakazan za ${selectedDate} u ${selectedStart}.`);
+      alert('Termin dodat', `Termin za ${clientName.trim()} je zakazan ${selectedDate} u ${selectedStart}.`);
+      setClientName('');
+      setClientPhone('');
       setSelectedServiceIds([]);
       setNote('');
       setSelectedStart(null);
-      router.push('/(client)/my-appointments');
+      router.push('/(admin)/calendar');
     } catch (e: any) {
       if (e?.message === 'SLOT_TAKEN') {
-        alert('Termin zauzet', 'Neko je upravo zauzeo ovaj termin. Izaberi drugi.');
+        alert('Termin zauzet', 'Taj termin je već zauzet. Izaberi drugi.');
       } else {
-        alert('Greška', 'Nešto nije u redu. Pokušaj ponovo.');
+        alert('Greška', e?.message ?? 'Nešto nije u redu. Pokušaj ponovo.');
       }
     } finally {
       setLoading(false);
@@ -78,7 +77,27 @@ export default function NewAppointmentScreen() {
 
   return (
     <ScreenContainer scroll>
-      <ScreenHeader title="Novi termin" />
+      <ScreenHeader title="Dodaj termin" />
+      <Text style={styles.subtitle}>Za nekog ko je zvao telefonom i nema aplikaciju.</Text>
+
+      <Text style={styles.label}>Ime i prezime</Text>
+      <TextInput
+        style={styles.textInput}
+        value={clientName}
+        onChangeText={setClientName}
+        placeholder="Npr. Marko Marković"
+        placeholderTextColor={colors.textSecondary}
+      />
+
+      <Text style={styles.label}>Broj telefona</Text>
+      <TextInput
+        style={styles.textInput}
+        value={clientPhone}
+        onChangeText={setClientPhone}
+        placeholder="Npr. 0601234567"
+        placeholderTextColor={colors.textSecondary}
+        keyboardType="phone-pad"
+      />
 
       <Text style={styles.label}>Usluge</Text>
       <View style={styles.chipsRow}>
@@ -130,17 +149,18 @@ export default function NewAppointmentScreen() {
         style={styles.input}
         value={note}
         onChangeText={setNote}
-        placeholder="Npr. želim kraću frizuru"
+        placeholder="Npr. želi kraću frizuru"
         placeholderTextColor={colors.textSecondary}
         multiline
       />
 
-      <Button title="Zakaži termin" onPress={handleBook} disabled={!canSubmit} loading={loading} />
+      <Button title="Dodaj termin" onPress={handleBook} disabled={!canSubmit} loading={loading} />
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
+  subtitle: { color: colors.textSecondary, ...typography.body, marginBottom: spacing.md },
   label: { ...typography.bodyBold, color: colors.textPrimary, marginTop: spacing.lg, marginBottom: spacing.sm },
   chipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   chip: {
@@ -167,6 +187,15 @@ const styles = StyleSheet.create({
   stepValue: { ...typography.h3, color: colors.textPrimary, minWidth: 24, textAlign: 'center' },
   stepHint: { color: colors.textSecondary, ...typography.small },
   calendar: { borderRadius: radius.md, overflow: 'hidden' },
+  textInput: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    backgroundColor: colors.surfaceAlt,
+    color: colors.textPrimary,
+  },
   input: {
     borderWidth: 1,
     borderColor: colors.border,

@@ -27,6 +27,22 @@ export async function createAppointment(input: NewAppointmentInput): Promise<voi
   });
 }
 
+export interface AdminAppointmentInput {
+  clientName: string;
+  clientPhone: string;
+  serviceIds: string[];
+  serviceNames: string[];
+  peopleCount: number;
+  date: string;
+  startTime: string;
+  note?: string;
+}
+
+// Olgica ručno dodaje termin za nekog ko je zvao telefonom i nema app.
+export async function createAdminAppointment(input: AdminAppointmentInput): Promise<void> {
+  await apiFetch('/appointments/admin', { method: 'POST', body: JSON.stringify(input) });
+}
+
 export async function cancelAppointment(appointment: Appointment, _cancelledBy: Role): Promise<void> {
   await apiFetch(`/appointments/${appointment.id}/cancel`, { method: 'POST' });
 }
