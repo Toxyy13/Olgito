@@ -52,7 +52,20 @@ async function main() {
   await bootstrapAdmin();
 
   const app = express();
-  app.use(cors());
+  // Auth ide preko Bearer tokena (ne kolačića), pa otvoren CORS sam po sebi
+  // ne otkriva tokene drugim sajtovima — ali kad postoji ALLOWED_ORIGINS
+  // (npr. u produkciji, sa admin/web panelom na poznatom domenu), suzi na
+  // taj spisak. Mobilna app i alati kao curl ne šalju Origin header uopšte,
+  // pa se uvek propuštaju.
+  const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
+  app.use(
+    cors({
+      origin: allowedOrigins.length === 0 ? true : (origin, cb) => cb(null, !origin || allowedOrigins.includes(origin)),
+    })
+  );
   app.use(express.json());
   app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 

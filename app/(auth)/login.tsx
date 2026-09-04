@@ -28,8 +28,8 @@ export default function LoginScreen() {
       setError('Unesi ispravnu email adresu.');
       return;
     }
-    if (password.length < 6) {
-      setError('Lozinka mora imati bar 6 karaktera.');
+    if (mode === 'register' && password.length < 8) {
+      setError('Lozinka mora imati bar 8 karaktera.');
       return;
     }
     if (mode === 'register' && password !== confirmPassword) {
@@ -106,7 +106,9 @@ export default function LoginScreen() {
 
         {error && <Text style={styles.error}>{error}</Text>}
 
-        <Button title={mode === 'login' ? 'Prijavi se' : 'Registruj se'} onPress={handleSubmit} loading={loading} />
+        <View style={styles.submitWrap}>
+          <Button title={mode === 'login' ? 'Prijavi se' : 'Registruj se'} onPress={handleSubmit} loading={loading} />
+        </View>
 
         <Pressable
           onPress={() => {
@@ -129,6 +131,7 @@ const styles = StyleSheet.create({
   logo: { fontFamily: fonts.heading, fontSize: 28, color: colors.textPrimary, marginTop: spacing.xs },
   subtitle: { ...typography.body, color: colors.textSecondary, marginTop: spacing.xs },
   card: { gap: spacing.md },
+  submitWrap: { marginTop: spacing.sm },
   label: { ...typography.bodyBold, color: colors.textPrimary },
   input: {
     borderWidth: 1,

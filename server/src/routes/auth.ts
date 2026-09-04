@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import bcrypt from 'bcryptjs';
 import { randomUUID } from 'node:crypto';
 import { db } from '../db';
@@ -8,13 +9,31 @@ import { toPublicUser, type UserRow } from '../types';
 
 export const authRouter = Router();
 
-authRouter.post('/register', async (req, res) => {
+// Bez ovoga niko ne ograničava broj pokušaja pogađanja lozinke za dati email —
+// napadač bi mogao neograničeno da proba. Broji se po IP-u, ne po emailu, da
+// jedan napadač ne može da zaobiđe limit prosto menjajući ciljani nalog.
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Previše pokušaja. Sačekaj par minuta pa probaj ponovo.' },
+});
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Previše pokušaja registracije. Sačekaj malo pa probaj ponovo.' },
+});
+
+authRouter.post('/register', registerLimiter, async (req, res) => {
   const { email, password } = req.body ?? {};
   if (typeof email !== 'string' || !/^\S+@\S+\.\S+$/.test(email)) {
     return res.status(400).json({ error: 'Unesi ispravnu email adresu.' });
   }
-  if (typeof password !== 'string' || password.length < 6) {
-    return res.status(400).json({ error: 'Lozinka mora imati bar 6 karaktera.' });
+  if (typeof password !== 'string' || password.length < 8) {
+    return res.status(400).json({ error: 'Lozinka mora imati bar 8 karaktera.' });
   }
 
   const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email.toLowerCase());
@@ -41,7 +60,7 @@ authRouter.post('/register', async (req, res) => {
   res.json({ token: signToken(id), user: toPublicUser(user) });
 });
 
-authRouter.post('/login', async (req, res) => {
+authRouter.post('/login', loginLimiter, async (req, res) => {
   const { email, password } = req.body ?? {};
   if (typeof email !== 'string' || typeof password !== 'string') {
     return res.status(400).json({ error: 'Unesi email i lozinku.' });
