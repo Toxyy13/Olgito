@@ -15,8 +15,8 @@ export default function RejectedClientsScreen() {
   useEffect(() => watchRejectedClients(setRejected), []);
 
   return (
-    <ScreenContainer>
-      <ScreenHeader title="Odbijeni klijenti" showBack />
+    <ScreenContainer showBack>
+      <ScreenHeader eyebrow="Arhiva" title="Odbijeni klijenti" />
       <FlatList
         style={{ flex: 1 }}
         data={rejected}
@@ -46,7 +46,9 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
     borderRadius: radius.md,
     padding: spacing.md,
     gap: spacing.md,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, Text, StyleSheet, ActivityIndicator, PressableProps, GestureResponderEvent } from 'react-native';
-import { colors, radius, spacing, typography } from '../theme';
+import { colors, radius, spacing, fonts } from '../theme';
 import { useClickSound } from '../hooks/useClickSound';
 
 interface ButtonProps extends Omit<PressableProps, 'style'> {
@@ -50,12 +50,13 @@ const styles = StyleSheet.create({
   base: {
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
-    borderRadius: radius.pill,
+    borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
   text: {
-    ...typography.bodyBold,
+    fontFamily: fonts.headingSemibold,
+    fontSize: 15,
     color: colors.textOnPrimary,
   },
 });

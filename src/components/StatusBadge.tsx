@@ -9,16 +9,24 @@ const STATUS_LABEL: Record<AppointmentStatus, string> = {
   otkazano: 'Otkazano',
 };
 
-const STATUS_COLOR: Record<AppointmentStatus, string> = {
-  zakazano: colors.statusZakazano,
-  potvrdjeno: colors.statusPotvrdjeno,
-  otkazano: colors.statusOtkazano,
+// Puna, zasićena pozadina (90% neprozirnosti) — tamnozeleni tekst svuda osim
+// na crvenoj "otkazano" pozadini, gde tamnozeleni tekst nema kontrast pa
+// ostaje beo. Isto pravilo kao u referentnom dizajnu.
+const STATUS_BG: Record<AppointmentStatus, string> = {
+  zakazano: 'rgba(255,183,3,0.9)',
+  potvrdjeno: 'rgba(45,198,83,0.9)',
+  otkazano: 'rgba(230,57,70,0.9)',
+};
+const STATUS_TEXT: Record<AppointmentStatus, string> = {
+  zakazano: colors.statusTextOnPastel,
+  potvrdjeno: colors.statusTextOnPastel,
+  otkazano: colors.textOnPrimary,
 };
 
 export function StatusBadge({ status }: { status: AppointmentStatus }) {
   return (
-    <View style={[styles.badge, { backgroundColor: STATUS_COLOR[status] }]}>
-      <Text style={styles.text}>{STATUS_LABEL[status]}</Text>
+    <View style={[styles.badge, { backgroundColor: STATUS_BG[status] }]}>
+      <Text style={[styles.text, { color: STATUS_TEXT[status] }]}>{STATUS_LABEL[status].toUpperCase()}</Text>
     </View>
   );
 }
@@ -30,5 +38,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     borderRadius: radius.pill,
   },
-  text: { ...typography.label, color: colors.textOnPrimary },
+  text: { ...typography.mono, fontSize: 10 },
 });

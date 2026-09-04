@@ -5,7 +5,10 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '../../src/context/AuthContext';
 import { Button } from '../../src/components/Button';
 import { ScreenContainer } from '../../src/components/ScreenContainer';
-import { colors, spacing, typography } from '../../src/theme';
+import { GlassCard } from '../../src/components/GlassCard';
+import { EyebrowLabel } from '../../src/components/EyebrowLabel';
+import { Logo } from '../../src/components/Logo';
+import { colors, spacing, typography, fonts } from '../../src/theme';
 
 export default function LoginScreen() {
   const { login, register } = useAuth();
@@ -48,11 +51,13 @@ export default function LoginScreen() {
   return (
     <ScreenContainer scroll>
       <View style={styles.header}>
-        <Text style={styles.logo}>Olgito 💈</Text>
+        <Logo size={56} />
+        <Text style={styles.logo}>Olgito</Text>
         <Text style={styles.subtitle}>Zakaži termin brzo i lako</Text>
       </View>
 
-      <View style={styles.card}>
+      <GlassCard style={styles.card}>
+        <EyebrowLabel>{mode === 'login' ? 'Dobrodošla/o nazad' : 'Novi nalog'}</EyebrowLabel>
         <Text style={styles.label}>Email adresa</Text>
         <TextInput
           style={styles.input}
@@ -114,35 +119,30 @@ export default function LoginScreen() {
             {mode === 'login' ? 'Nemaš nalog? Registruj se' : 'Već imaš nalog? Prijavi se'}
           </Text>
         </Pressable>
-      </View>
+      </GlassCard>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  header: { alignItems: 'center', marginTop: spacing.xxl, marginBottom: spacing.xl },
-  logo: { ...typography.h1, color: colors.textOnPrimary },
+  header: { alignItems: 'center', marginTop: spacing.xl, marginBottom: spacing.xl, gap: spacing.xs },
+  logo: { fontFamily: fonts.heading, fontSize: 28, color: colors.textPrimary, marginTop: spacing.xs },
   subtitle: { ...typography.body, color: colors.textSecondary, marginTop: spacing.xs },
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: 20,
-    padding: spacing.lg,
-    gap: spacing.md,
-  },
+  card: { gap: spacing.md },
   label: { ...typography.bodyBold, color: colors.textPrimary },
   input: {
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.inputBorder,
     borderRadius: 14,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     fontSize: 16,
     color: colors.textPrimary,
-    backgroundColor: colors.surfaceAlt,
+    backgroundColor: colors.inputBg,
   },
   passwordRow: { position: 'relative', justifyContent: 'center' },
   passwordInput: { paddingRight: spacing.xl + spacing.lg },
   eyeButton: { position: 'absolute', right: spacing.md },
-  error: { color: colors.textOnPrimary, ...typography.small, fontWeight: '700' },
-  switchText: { color: colors.textOnPrimary, textAlign: 'center', ...typography.small, marginTop: spacing.xs, textDecorationLine: 'underline' },
+  error: { color: colors.accent, ...typography.small, fontFamily: typography.bodyBold.fontFamily },
+  switchText: { color: colors.textSecondary, textAlign: 'center', ...typography.small, marginTop: spacing.xs, textDecorationLine: 'underline' },
 });

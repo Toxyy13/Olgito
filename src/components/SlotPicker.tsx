@@ -28,7 +28,6 @@ export function SlotPicker({ dayHours, allSlots, availableStarts, peopleCount, s
 
   return (
     <View>
-      <Text style={styles.label}>Slobodni termini</Text>
       {peopleCount > 1 && availableStarts.length > 0 && (
         <Text style={styles.hint}>Termin traje {peopleCount * SLOT_MINUTES} min — obeleženo je {peopleCount} termina.</Text>
       )}
@@ -62,7 +61,6 @@ export function SlotPicker({ dayHours, allSlots, availableStarts, peopleCount, s
 }
 
 const styles = StyleSheet.create({
-  label: { ...typography.bodyBold, color: colors.textPrimary, marginBottom: spacing.sm },
   hint: { color: colors.textSecondary, ...typography.small, marginBottom: spacing.sm },
   closed: { color: colors.textSecondary, ...typography.body },
   chipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
@@ -70,13 +68,13 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     borderRadius: radius.pill,
-    backgroundColor: colors.surfaceAlt,
+    backgroundColor: 'rgba(255,210,63,0.7)',
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: 'transparent',
   },
-  chipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  chipDisabled: { backgroundColor: colors.slotZauzet, borderColor: colors.slotZauzet, opacity: 0.6 },
-  chipText: { color: colors.textPrimary, ...typography.small },
-  chipTextActive: { color: colors.textOnPrimary, fontWeight: '700' },
-  chipTextDisabled: { color: colors.textSecondary },
+  chipActive: { backgroundColor: colors.accent, borderWidth: 2, borderColor: 'rgba(255,255,255,0.5)' },
+  chipDisabled: { backgroundColor: 'rgba(255,255,255,0.06)', borderColor: colors.glassBorder, opacity: 1 },
+  chipText: { color: colors.background, ...typography.small, fontFamily: typography.smallMedium.fontFamily },
+  chipTextActive: { color: colors.background, fontFamily: typography.bodyBold.fontFamily },
+  chipTextDisabled: { color: 'rgba(255,255,255,0.45)', textDecorationLine: 'line-through' },
 });

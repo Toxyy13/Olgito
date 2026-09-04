@@ -11,7 +11,7 @@ export default function ClientMessagesScreen() {
 
   return (
     <ScreenContainer>
-      <ScreenHeader title="Poruke od Olgice 💬" />
+      <ScreenHeader eyebrow="Prepiska" title="Poruke od Olgice" />
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}

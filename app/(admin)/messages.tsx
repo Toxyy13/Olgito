@@ -15,7 +15,7 @@ export default function AdminMessagesScreen() {
 
   return (
     <ScreenContainer>
-      <ScreenHeader title="Poruke 💬" />
+      <ScreenHeader eyebrow="Prepiska" title="Poruke" />
       <FlatList
         style={{ flex: 1 }}
         data={conversations}
